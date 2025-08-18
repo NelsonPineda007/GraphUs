@@ -1,0 +1,410 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GraphUs - Professional Navbar</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="index.css">
+</head>
+
+<body class="bg-gray-50 min-h-screen">
+    <div class="flex">
+        <!-- Sidebar Principal -->
+        <div id="sidebar"
+            class="sidebar-expanded bg-gradient-to-b from-slate-50 to-slate-100 border-r border-slate-200 min-h-screen transition-all duration-300 ease-in-out shadow-lg overflow-hidden">
+            <!-- Header -->
+            <div class="flex items-center p-4 border-b border-slate-200 bg-white/80 backdrop-blur-sm">
+                <button id="logoToggle"
+                    class="flex items-center space-x-3 hover:bg-slate-100/50 p-2 rounded-lg transition-all duration-200 w-full">
+                    <div
+                        class="w-8 h-8 bg-gradient-to-br from-indigo-500 to-purple-600 rounded-lg flex items-center justify-center shadow-md hover:shadow-lg transition-shadow flex-shrink-0">
+                        <i class="fas fa-project-diagram text-white text-sm"></i>
+                    </div>
+                    <h1 class="nav-text text-xl font-semibold text-slate-700">GraphUs</h1>
+                </button>
+            </div>
+
+            <!-- Navigation Options -->
+            <div class="p-3 space-y-2">
+                <!-- Figuras -->
+                <button
+                    class="nav-option w-full flex items-center p-3 rounded-xl hover:bg-white/70 hover:shadow-sm transition-all duration-200 text-left group"
+                    data-option="figuras" onclick="selectOption('figuras')">
+                    <div
+                        class="nav-icon-container w-9 h-9 bg-gradient-to-br from-blue-500 to-cyan-600 rounded-lg flex items-center justify-center mr-3 flex-shrink-0 shadow-sm group-hover:shadow-md transition-shadow">
+                        <i class="fas fa-shapes text-white text-sm"></i>
+                    </div>
+                    <span class="nav-text text-sm font-medium text-slate-700">Figuras</span>
+                    <div class="tooltip">Figuras</div>
+                </button>
+
+                <!-- Código -->
+                <button
+                    class="nav-option w-full flex items-center p-3 rounded-xl hover:bg-white/70 hover:shadow-sm transition-all duration-200 text-left group"
+                    data-option="codigo" onclick="selectOption('codigo')">
+                    <div
+                        class="nav-icon-container w-9 h-9 bg-gradient-to-br from-emerald-500 to-teal-600 rounded-lg flex items-center justify-center mr-3 flex-shrink-0 shadow-sm group-hover:shadow-md transition-shadow">
+                        <i class="fas fa-code text-white text-sm"></i>
+                    </div>
+                    <span class="nav-text text-sm font-medium text-slate-700">Código</span>
+                    <div class="tooltip">Código</div>
+                </button>
+
+                <!-- Importar -->
+                <button
+                    class="nav-option w-full flex items-center p-3 rounded-xl hover:bg-white/70 hover:shadow-sm transition-all duration-200 text-left group"
+                    data-option="importar" onclick="selectOption('importar')">
+                    <div
+                        class="nav-icon-container w-9 h-9 bg-gradient-to-br from-violet-500 to-purple-600 rounded-lg flex items-center justify-center mr-3 flex-shrink-0 shadow-sm group-hover:shadow-md transition-shadow">
+                        <i class="fas fa-download text-white text-sm"></i>
+                    </div>
+                    <span class="nav-text text-sm font-medium text-slate-700">Importar</span>
+                    <div class="tooltip">Importar</div>
+                </button>
+
+                <!-- Exportar -->
+                <button
+                    class="nav-option w-full flex items-center p-3 rounded-xl hover:bg-white/70 hover:shadow-sm transition-all duration-200 text-left group"
+                    data-option="exportar" onclick="selectOption('exportar')">
+                    <div
+                        class="nav-icon-container w-9 h-9 bg-gradient-to-br from-orange-500 to-amber-600 rounded-lg flex items-center justify-center mr-3 flex-shrink-0 shadow-sm group-hover:shadow-md transition-shadow">
+                        <i class="fas fa-upload text-white text-sm"></i>
+                    </div>
+                    <span class="nav-text text-sm font-medium text-slate-700">Exportar</span>
+                    <div class="tooltip">Exportar</div>
+                </button>
+            </div>
+        </div>
+
+        <!-- Panel Lateral Derecho -->
+        <div id="rightPanel"
+            class="panel-collapsed bg-gradient-to-b from-white to-slate-50/50 border-r border-slate-200 min-h-screen transition-all duration-300 ease-in-out shadow-lg overflow-hidden">
+            <div id="panelContent" class="p-6 h-full">
+                <!-- Contenido dinámico se carga aquí -->
+            </div>
+        </div>
+
+        <!-- Área Principal -->
+        <div class="flex-1 bg-gray-50">
+            <div class="p-8">
+                <div class="text-center text-gray-500">
+                    <i class="fas fa-mouse-pointer text-4xl mb-4"></i>
+                    <p class="text-lg">Selecciona una opción del navbar para ver sus herramientas</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let currentOption = null;
+        let isRightPanelOpen = false;
+        let isSidebarCollapsed = false;
+
+        // Contenido para cada opción
+        const panelContent = {
+            figuras: {
+                title: 'Figuras de Diagrama',
+                content: `
+                    <div class="space-y-4">
+                        <h3 class="text-lg font-semibold text-gray-800 mb-4">Elementos de Entidad-Relación</h3>
+                        
+                        <div class="space-y-3">
+                            <div class="p-3 border border-slate-200 rounded-xl hover:shadow-md hover:bg-white/80 transition-all duration-200 cursor-pointer group">
+                                <div class="flex items-center space-x-3">
+                                    <div class="w-10 h-10 bg-gradient-to-br from-blue-500 to-cyan-600 rounded-xl flex items-center justify-center shadow-sm group-hover:shadow-md transition-shadow">
+                                        <i class="fas fa-table text-white"></i>
+                                    </div>
+                                    <div>
+                                        <div class="font-semibold text-slate-800">Tabla/Entidad</div>
+                                        <div class="text-sm text-slate-500">Representa una entidad de base de datos</div>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="p-3 border border-slate-200 rounded-xl hover:shadow-md hover:bg-white/80 transition-all duration-200 cursor-pointer group">
+                                <div class="flex items-center space-x-3">
+                                    <div class="w-10 h-10 bg-gradient-to-br from-emerald-500 to-teal-600 rounded-xl flex items-center justify-center shadow-sm group-hover:shadow-md transition-shadow">
+                                        <i class="fas fa-link text-white"></i>
+                                    </div>
+                                    <div>
+                                        <div class="font-semibold text-slate-800">Relación</div>
+                                        <div class="text-sm text-slate-500">Conecta entidades entre sí</div>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="p-3 border border-slate-200 rounded-xl hover:shadow-md hover:bg-white/80 transition-all duration-200 cursor-pointer group">
+                                <div class="flex items-center space-x-3">
+                                    <div class="w-10 h-10 bg-gradient-to-br from-violet-500 to-purple-600 rounded-xl flex items-center justify-center shadow-sm group-hover:shadow-md transition-shadow">
+                                        <i class="fas fa-key text-white"></i>
+                                    </div>
+                                    <div>
+                                        <div class="font-semibold text-slate-800">Clave Primaria</div>
+                                        <div class="text-sm text-slate-500">Identificador único de la entidad</div>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="p-3 border border-slate-200 rounded-xl hover:shadow-md hover:bg-white/80 transition-all duration-200 cursor-pointer group">
+                                <div class="flex items-center space-x-3">
+                                    <div class="w-10 h-10 bg-gradient-to-br from-amber-500 to-orange-600 rounded-xl flex items-center justify-center shadow-sm group-hover:shadow-md transition-shadow">
+                                        <i class="fas fa-external-link-alt text-white"></i>
+                                    </div>
+                                    <div>
+                                        <div class="font-semibold text-slate-800">Clave Foránea</div>
+                                        <div class="text-sm text-slate-500">Referencia a otra entidad</div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="mt-6 p-4 bg-gradient-to-r from-blue-50 to-indigo-50 rounded-xl border border-blue-200">
+                            <p class="text-sm text-slate-700">
+                                <i class="fas fa-info-circle text-blue-500 mr-2"></i>
+                                Arrastra los elementos al área de trabajo para crear tu diagrama
+                            </p>
+                        </div>
+                    </div>
+                `
+            },
+            codigo: {
+                title: 'Editor de Código',
+                content: `
+                    <div class="space-y-4">
+                        <h3 class="text-lg font-semibold text-gray-800 mb-4">Herramientas de Código</h3>
+                        
+                        <div class="space-y-3">
+                            <div class="p-3 border border-gray-200 rounded-lg hover:shadow-sm transition-shadow cursor-pointer">
+                                <div class="flex items-center space-x-3">
+                                    <div class="w-8 h-8 bg-blue-100 rounded flex items-center justify-center">
+                                        <i class="fas fa-database text-blue-600 text-sm"></i>
+                                    </div>
+                                    <div>
+                                        <div class="font-medium text-gray-800">SQL Generator</div>
+                                        <div class="text-sm text-gray-500">Genera código SQL desde el diagrama</div>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="p-3 border border-gray-200 rounded-lg hover:shadow-sm transition-shadow cursor-pointer">
+                                <div class="flex items-center space-x-3">
+                                    <div class="w-8 h-8 bg-green-100 rounded flex items-center justify-center">
+                                        <i class="fab fa-js text-green-600 text-sm"></i>
+                                    </div>
+                                    <div>
+                                        <div class="font-medium text-gray-800">JavaScript Models</div>
+                                        <div class="text-sm text-gray-500">Genera modelos en JavaScript</div>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="p-3 border border-gray-200 rounded-lg hover:shadow-sm transition-shadow cursor-pointer">
+                                <div class="flex items-center space-x-3">
+                                    <div class="w-8 h-8 bg-red-100 rounded flex items-center justify-center">
+                                        <i class="fab fa-python text-red-600 text-sm"></i>
+                                    </div>
+                                    <div>
+                                        <div class="font-medium text-gray-800">Python Classes</div>
+                                        <div class="text-sm text-gray-500">Genera clases en Python</div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="mt-6">
+                            <textarea class="w-full h-32 p-3 border border-gray-200 rounded-lg text-sm font-mono" 
+                                      placeholder="// Tu código aparecerá aquí..."></textarea>
+                        </div>
+                    </div>
+                `
+            },
+            importar: {
+                title: 'Importar Contenido',
+                content: `
+                    <div class="space-y-4">
+                        <h3 class="text-lg font-semibold text-gray-800 mb-4">Opciones de Importación</h3>
+                        
+                        <div class="space-y-3">
+                            <div class="p-4 border-2 border-dashed border-gray-300 rounded-lg text-center hover:border-gray-400 transition-colors cursor-pointer">
+                                <i class="fas fa-file-code text-2xl text-gray-400 mb-2"></i>
+                                <div class="font-medium text-gray-700">Importar Código SQL</div>
+                                <div class="text-sm text-gray-500">Arrastra tu archivo .sql aquí</div>
+                            </div>
+                            
+                            <div class="p-4 border-2 border-dashed border-gray-300 rounded-lg text-center hover:border-gray-400 transition-colors cursor-pointer">
+                                <i class="fas fa-file-alt text-2xl text-gray-400 mb-2"></i>
+                                <div class="font-medium text-gray-700">Importar JSON Schema</div>
+                                <div class="text-sm text-gray-500">Arrastra tu archivo .json aquí</div>
+                            </div>
+                            
+                            <div class="p-4 border-2 border-dashed border-gray-300 rounded-lg text-center hover:border-gray-400 transition-colors cursor-pointer">
+                                <i class="fas fa-file-image text-2xl text-gray-400 mb-2"></i>
+                                <div class="font-medium text-gray-700">Importar Diagrama</div>
+                                <div class="text-sm text-gray-500">Formatos: .xml, .drawio</div>
+                            </div>
+                        </div>
+                        
+                        <div class="mt-6 p-4 bg-gray-50 rounded-lg">
+                            <p class="text-sm text-gray-600">
+                                <i class="fas fa-upload text-blue-500 mr-2"></i>
+                                También puedes importar desde URL o pegar código directamente
+                            </p>
+                        </div>
+                    </div>
+                `
+            },
+            exportar: {
+                title: 'Exportar Proyecto',
+                content: `
+                    <div class="space-y-4">
+                        <h3 class="text-lg font-semibold text-gray-800 mb-4">Opciones de Exportación</h3>
+                        
+                        <div class="space-y-3">
+                            <div class="p-3 border border-gray-200 rounded-lg hover:shadow-sm transition-shadow cursor-pointer">
+                                <div class="flex items-center space-x-3">
+                                    <div class="w-8 h-8 bg-blue-100 rounded flex items-center justify-center">
+                                        <i class="fas fa-image text-blue-600 text-sm"></i>
+                                    </div>
+                                    <div>
+                                        <div class="font-medium text-gray-800">Exportar como Imagen</div>
+                                        <div class="text-sm text-gray-500">PNG, JPG, SVG</div>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="p-3 border border-gray-200 rounded-lg hover:shadow-sm transition-shadow cursor-pointer">
+                                <div class="flex items-center space-x-3">
+                                    <div class="w-8 h-8 bg-green-100 rounded flex items-center justify-center">
+                                        <i class="fas fa-file-code text-green-600 text-sm"></i>
+                                    </div>
+                                    <div>
+                                        <div class="font-medium text-gray-800">Exportar Código SQL</div>
+                                        <div class="text-sm text-gray-500">Script completo de la base de datos</div>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="p-3 border border-gray-200 rounded-lg hover:shadow-sm transition-shadow cursor-pointer">
+                                <div class="flex items-center space-x-3">
+                                    <div class="w-8 h-8 bg-purple-100 rounded flex items-center justify-center">
+                                        <i class="fas fa-file-export text-purple-600 text-sm"></i>
+                                    </div>
+                                    <div>
+                                        <div class="font-medium text-gray-800">Exportar Proyecto</div>
+                                        <div class="text-sm text-gray-500">Archivo .graphus para compartir</div>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="p-3 border border-gray-200 rounded-lg hover:shadow-sm transition-shadow cursor-pointer">
+                                <div class="flex items-center space-x-3">
+                                    <div class="w-8 h-8 bg-yellow-100 rounded flex items-center justify-center">
+                                        <i class="fas fa-file-pdf text-yellow-600 text-sm"></i>
+                                    </div>
+                                    <div>
+                                        <div class="font-medium text-gray-800">Exportar Documentación</div>
+                                        <div class="text-sm text-gray-500">PDF con diagramas y código</div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                `
+            }
+        };
+
+        function toggleSidebar() {
+            const sidebar = document.getElementById('sidebar');
+            isSidebarCollapsed = !isSidebarCollapsed;
+
+            if (isSidebarCollapsed) {
+                sidebar.classList.remove('sidebar-expanded');
+                sidebar.classList.add('sidebar-collapsed');
+
+                // Cerrar panel derecho si está abierto
+                if (isRightPanelOpen) {
+                    closeRightPanel();
+                }
+            } else {
+                sidebar.classList.remove('sidebar-collapsed');
+                sidebar.classList.add('sidebar-expanded');
+            }
+        }
+
+        function selectOption(option) {
+            if (isSidebarCollapsed) {
+                // Si está colapsado, expandir primero
+                toggleSidebar();
+                setTimeout(() => {
+                    selectOptionInternal(option);
+                }, 300);
+            } else {
+                selectOptionInternal(option);
+            }
+        }
+
+        function selectOptionInternal(option) {
+            // Remover selección anterior
+            document.querySelectorAll('.nav-option').forEach(btn => {
+                btn.classList.remove('selected-option');
+            });
+
+            // Añadir selección actual
+            const currentBtn = document.querySelector(`[data-option="${option}"]`);
+            currentBtn.classList.add('selected-option');
+
+            if (currentOption === option && isRightPanelOpen) {
+                closeRightPanel();
+            } else {
+                openRightPanel(option);
+            }
+
+            currentOption = option;
+        }
+
+        function openRightPanel(option) {
+            const panel = document.getElementById('rightPanel');
+            const content = document.getElementById('panelContent');
+
+            panel.classList.remove('panel-collapsed');
+            panel.classList.add('panel-expanded');
+
+            // Cargar contenido
+            content.innerHTML = `
+                <div class="slide-in">
+                    <div class="flex items-center justify-between mb-6 pb-4 border-b border-slate-200">
+                        <h2 class="text-xl font-semibold text-slate-800">${panelContent[option].title}</h2>
+                        <button onclick="closeRightPanel()" class="p-2 hover:bg-slate-100 rounded-lg transition-colors">
+                            <i class="fas fa-times text-slate-500 hover:text-slate-700"></i>
+                        </button>
+                    </div>
+                    ${panelContent[option].content}
+                </div>
+            `;
+
+            isRightPanelOpen = true;
+        }
+
+        function closeRightPanel() {
+            const panel = document.getElementById('rightPanel');
+            panel.classList.remove('panel-expanded');
+            panel.classList.add('panel-collapsed');
+
+            // Remover selección
+            document.querySelectorAll('.nav-option').forEach(btn => {
+                btn.classList.remove('selected-option');
+            });
+
+            isRightPanelOpen = false;
+            currentOption = null;
+        }
+
+        // Event listeners
+        document.getElementById('logoToggle').addEventListener('click', toggleSidebar);
+    </script>
+</body>
+
+</html>
