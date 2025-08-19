@@ -7,11 +7,9 @@
     <title>GraphUs - Professional Navbar</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Varela+Round:wght@400&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="index.css">
+
     <style>
-        /* Estilos originales del sidebar */
         .sidebar-collapsed {
             width: 5rem;
         }
@@ -76,6 +74,7 @@
 
         .nav-icon-container {
             min-width: 2.25rem;
+            /* w-9 equivalent */
             transition: all 0.3s ease;
         }
 
@@ -123,220 +122,28 @@
             box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
             border-left: 4px solid #6366f1;
         }
-
-        /* Sistema de Toasts */
-        :root {
-            --toast-help-primary: #05478a;
-            --toast-help-secondary: #0070e0;
-            --toast-success-primary: #005e38;
-            --toast-success-secondary: #03a65a;
-            --toast-warning-primary: #c24914;
-            --toast-warning-secondary: #fc8621;
-            --toast-error-primary: #851d41;
-            --toast-error-secondary: #db3056;
+        .er-element {
+            position: absolute;
+            cursor: move;
+            user-select: none;
+            z-index: 10;
         }
 
-        .toast-container {
-            position: fixed;
-            top: 20px;
-            right: 20px;
+        .er-element:hover {
+            transform: scale(1.02);
+            box-shadow: 0 8px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+        }
+
+        .dragging {
+            transform: rotate(5deg) scale(1.1);
+            opacity: 0.8;
             z-index: 1000;
-            display: flex;
-            flex-direction: column;
-            gap: 10px;
-            max-width: 400px;
-        }
-
-        .toast-item {
-            overflow: hidden;
-            max-height: 0;
-            opacity: 0;
-            transition: all 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94);
-            transform: translateX(100%);
-            margin-bottom: 0;
-        }
-
-        .toast-item.show {
-            max-height: 200px;
-            opacity: 1;
-            transform: translateX(0);
-            margin-bottom: 10px;
-        }
-
-        .toast-item.removing {
-            max-height: 0;
-            opacity: 0;
-            transform: translateX(100%);
-            margin-bottom: 0;
-        }
-
-        .toast {
-            background: var(--toast-bg);
-            color: #f5f5f5;
-            padding: 1rem 2rem 1rem 6rem;
-            border-radius: 20px;
-            position: relative;
-            font-family: "Varela Round", sans-serif;
-            font-weight: 400;
-            text-align: left;
-            min-width: 280px;
-            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
-            backdrop-filter: blur(10px);
-            border: 1px solid rgba(255, 255, 255, 0.1);
-        }
-
-        /* Decoración de gotas animada */
-        .toast::before {
-            content: "";
-            position: absolute;
-            width: 5.5rem;
-            height: 6rem;
-            background: 
-                radial-gradient(circle at 22% 3.8rem, var(--toast-primary) 0.75rem, transparent calc(0.75rem + 1px)),
-                radial-gradient(circle at 95% 1.9rem, var(--toast-primary) 0.07rem, transparent calc(0.07rem + 1px)),
-                radial-gradient(circle at 80% 2.25rem, var(--toast-primary) 0.18rem, transparent calc(0.18rem + 1px)),
-                radial-gradient(circle at 80% 75%, var(--toast-primary) 0.35rem, transparent calc(0.35rem + 1px)),
-                radial-gradient(circle at 43% 2.3rem, var(--toast-primary) 0.07rem, transparent calc(0.07rem + 1px)),
-                radial-gradient(circle at 40% 1rem, var(--toast-primary) 0.12rem, transparent calc(0.12rem + 1px)),
-                radial-gradient(circle at 20% 1.5rem, var(--toast-primary) 0.25rem, transparent calc(0.25rem + 1px)),
-                radial-gradient(circle at 64% 51%, var(--toast-primary) 0.45rem, transparent calc(0.45rem + 1px)),
-                radial-gradient(circle at 0% 120%, var(--toast-primary) 4rem, transparent calc(4rem + 1px));
-            background-repeat: no-repeat;
-            bottom: 0;
-            left: 0;
-            border-radius: 0 0 0 20px;
-            opacity: 0.6;
-        }
-
-        /* Icono circular */
-        .toast::after {
-            content: var(--toast-icon);
-            position: absolute;
-            width: 3.5rem;
-            height: 3.5rem;
-            background: var(--toast-primary);
-            top: -1.75rem;
-            left: 2rem;
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 1.8rem;
-            color: white;
-            font-weight: bold;
-            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
-            border: 3px solid rgba(255, 255, 255, 0.2);
-        }
-
-        .toast h3 {
-            font-size: 1.2rem;
-            margin: 0 0 0.5rem 0;
-            font-weight: 600;
-            position: relative;
-            color: #ffffff;
-        }
-
-        .toast p {
-            font-size: 0.95rem;
-            margin: 0;
-            line-height: 1.4;
-            color: rgba(255, 255, 255, 0.9);
-        }
-
-        .toast-close {
-            position: absolute;
-            top: 1rem;
-            right: 1rem;
-            width: 1.5rem;
-            height: 1.5rem;
-            border-radius: 50%;
-            background: rgba(255, 255, 255, 0.2);
-            border: none;
-            color: white;
-            cursor: pointer;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 1.2rem;
-            transition: all 0.3s ease;
-            backdrop-filter: blur(5px);
-        }
-
-        .toast-close:hover {
-            background: rgba(255, 255, 255, 0.3);
-            transform: scale(1.1);
-        }
-
-        /* Tipos de toast */
-        .toast.help {
-            --toast-primary: var(--toast-help-primary);
-            --toast-bg: var(--toast-help-secondary);
-            --toast-icon: "?";
-        }
-
-        .toast.success {
-            --toast-primary: var(--toast-success-primary);
-            --toast-bg: var(--toast-success-secondary);
-            --toast-icon: "✓";
-        }
-
-        .toast.warning {
-            --toast-primary: var(--toast-warning-primary);
-            --toast-bg: var(--toast-warning-secondary);
-            --toast-icon: "!";
-        }
-
-        .toast.error {
-            --toast-primary: var(--toast-error-primary);
-            --toast-bg: var(--toast-error-secondary);
-            --toast-icon: "×";
-        }
-
-        /* Ajuste específico para el ícono de éxito */
-        .toast.success::after {
-            font-size: 1.4rem;
-        }
-
-        /* Animación de entrada suave */
-        @keyframes toastSlideIn {
-            from {
-                transform: translateX(100%) rotateZ(5deg);
-                opacity: 0;
-            }
-            to {
-                transform: translateX(0) rotateZ(0deg);
-                opacity: 1;
-            }
-        }
-
-        .toast-item.show {
-            animation: toastSlideIn 0.5s cubic-bezier(0.25, 0.46, 0.45, 0.94);
-        }
-
-        /* Efecto hover en el toast */
-        .toast:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.4);
-        }
-
-        /* Barra de progreso para auto-close */
-        .toast-progress {
-            position: absolute;
-            bottom: 0;
-            left: 0;
-            height: 3px;
-            background: rgba(255, 255, 255, 0.3);
-            border-radius: 0 0 20px 20px;
-            transform-origin: left;
-            transition: transform linear;
         }
     </style>
+>>>>>>> Stashed changes
 </head>
 
 <body class="bg-gray-50 min-h-screen">
-    <!-- Contenedor de Toasts -->
-    <div id="toast-container" class="toast-container"></div>
-
     <div class="flex">
         <!-- Sidebar Principal -->
         <div id="sidebar"
@@ -349,14 +156,26 @@
                         class="w-8 h-8 bg-gradient-to-br from-indigo-500 to-purple-600 rounded-lg flex items-center justify-center shadow-md hover:shadow-lg transition-shadow flex-shrink-0">
                         <i class="fas fa-project-diagram text-white text-sm"></i>
                     </div>
-                    <h1 class="nav-text text-xl font-semibold text-slate-700 sidebar-text">GraphUs</h1>
+                    <h1 class="nav-text text-xl font-semibold text-slate-700">GraphUs</h1>
                 </button>
             </div>
 
             <!-- Navigation Options -->
             <div class="p-3 space-y-2">
                 <!-- Figuras -->
-                <div class="nav-option-container">
+<<<<<<< Updated upstream
+                <button
+                    class="nav-option w-full flex items-center p-3 rounded-xl hover:bg-white/70 hover:shadow-sm transition-all duration-200 text-left group"
+                    data-option="figuras" onclick="selectOption('figuras')">
+                    <div
+                        class="nav-icon-container w-9 h-9 bg-gradient-to-br from-blue-500 to-cyan-600 rounded-lg flex items-center justify-center mr-3 flex-shrink-0 shadow-sm group-hover:shadow-md transition-shadow">
+                        <i class="fas fa-shapes text-white text-sm"></i>
+                    </div>
+                    <span class="nav-text text-sm font-medium text-slate-700">Figuras</span>
+                    <div class="tooltip">Figuras</div>
+                </button>
+=======
+               <div class="nav-option-container">
                     <button
                         class="nav-option w-full flex items-center p-3 rounded-xl hover:bg-white/70 hover:shadow-sm transition-all duration-200 text-left group relative"
                         data-option="figuras" onclick="selectOption('figuras')">
@@ -368,48 +187,44 @@
                         <div class="tooltip sidebar-collapsed-only">Figuras</div>
                     </button>
                 </div>
+                
+>>>>>>> Stashed changes
 
                 <!-- Código -->
-                <div class="nav-option-container">
-                    <button
-                        class="nav-option w-full flex items-center p-3 rounded-xl hover:bg-white/70 hover:shadow-sm transition-all duration-200 text-left group relative"
-                        data-option="codigo" onclick="selectOption('codigo')">
-                        <div
-                            class="w-9 h-9 bg-gradient-to-br from-emerald-500 to-teal-600 rounded-lg flex items-center justify-center mr-3 flex-shrink-0 shadow-sm group-hover:shadow-md transition-shadow">
-                            <i class="fas fa-code text-white text-sm"></i>
-                        </div>
-                        <span class="nav-text text-sm font-medium text-slate-700 sidebar-text">Código</span>
-                        <div class="tooltip sidebar-collapsed-only">Código</div>
-                    </button>
-                </div>
+                <button
+                    class="nav-option w-full flex items-center p-3 rounded-xl hover:bg-white/70 hover:shadow-sm transition-all duration-200 text-left group"
+                    data-option="codigo" onclick="selectOption('codigo')">
+                    <div
+                        class="nav-icon-container w-9 h-9 bg-gradient-to-br from-emerald-500 to-teal-600 rounded-lg flex items-center justify-center mr-3 flex-shrink-0 shadow-sm group-hover:shadow-md transition-shadow">
+                        <i class="fas fa-code text-white text-sm"></i>
+                    </div>
+                    <span class="nav-text text-sm font-medium text-slate-700">Código</span>
+                    <div class="tooltip">Código</div>
+                </button>
 
                 <!-- Importar -->
-                <div class="nav-option-container">
-                    <button
-                        class="nav-option w-full flex items-center p-3 rounded-xl hover:bg-white/70 hover:shadow-sm transition-all duration-200 text-left group relative"
-                        data-option="importar" onclick="selectOption('importar')">
-                        <div
-                            class="w-9 h-9 bg-gradient-to-br from-violet-500 to-purple-600 rounded-lg flex items-center justify-center mr-3 flex-shrink-0 shadow-sm group-hover:shadow-md transition-shadow">
-                            <i class="fas fa-download text-white text-sm"></i>
-                        </div>
-                        <span class="nav-text text-sm font-medium text-slate-700 sidebar-text">Importar</span>
-                        <div class="tooltip sidebar-collapsed-only">Importar</div>
-                    </button>
-                </div>
+                <button
+                    class="nav-option w-full flex items-center p-3 rounded-xl hover:bg-white/70 hover:shadow-sm transition-all duration-200 text-left group"
+                    data-option="importar" onclick="selectOption('importar')">
+                    <div
+                        class="nav-icon-container w-9 h-9 bg-gradient-to-br from-violet-500 to-purple-600 rounded-lg flex items-center justify-center mr-3 flex-shrink-0 shadow-sm group-hover:shadow-md transition-shadow">
+                        <i class="fas fa-download text-white text-sm"></i>
+                    </div>
+                    <span class="nav-text text-sm font-medium text-slate-700">Importar</span>
+                    <div class="tooltip">Importar</div>
+                </button>
 
                 <!-- Exportar -->
-                <div class="nav-option-container">
-                    <button
-                        class="nav-option w-full flex items-center p-3 rounded-xl hover:bg-white/70 hover:shadow-sm transition-all duration-200 text-left group relative"
-                        data-option="exportar" onclick="selectOption('exportar')">
-                        <div
-                            class="w-9 h-9 bg-gradient-to-br from-orange-500 to-amber-600 rounded-lg flex items-center justify-center mr-3 flex-shrink-0 shadow-sm group-hover:shadow-md transition-shadow">
-                            <i class="fas fa-upload text-white text-sm"></i>
-                        </div>
-                        <span class="nav-text text-sm font-medium text-slate-700 sidebar-text">Exportar</span>
-                        <div class="tooltip sidebar-collapsed-only">Exportar</div>
-                    </button>
-                </div>
+                <button
+                    class="nav-option w-full flex items-center p-3 rounded-xl hover:bg-white/70 hover:shadow-sm transition-all duration-200 text-left group"
+                    data-option="exportar" onclick="selectOption('exportar')">
+                    <div
+                        class="nav-icon-container w-9 h-9 bg-gradient-to-br from-orange-500 to-amber-600 rounded-lg flex items-center justify-center mr-3 flex-shrink-0 shadow-sm group-hover:shadow-md transition-shadow">
+                        <i class="fas fa-upload text-white text-sm"></i>
+                    </div>
+                    <span class="nav-text text-sm font-medium text-slate-700">Exportar</span>
+                    <div class="tooltip">Exportar</div>
+                </button>
             </div>
         </div>
 
@@ -422,359 +237,95 @@
         </div>
 
         <!-- Área Principal -->
-        <div class="flex-1 bg-gray-50 relative overflow-hidden">
-            <!-- Cuadrícula de fondo -->
-            <div class="absolute inset-0 opacity-30">
-                <svg width="100%" height="100%" xmlns="http://www.w3.org/2000/svg">
-                    <defs>
-                        <pattern id="grid" width="20" height="20" patternUnits="userSpaceOnUse">
-                            <path d="M 20 0 L 0 0 0 20" fill="none" stroke="#cbd5e1" stroke-width="0.5" />
-                        </pattern>
-                        <pattern id="gridBold" width="100" height="100" patternUnits="userSpaceOnUse">
-                            <path d="M 100 0 L 0 0 0 100" fill="none" stroke="#94a3b8" stroke-width="1" />
-                        </pattern>
-                    </defs>
-                    <rect width="100%" height="100%" fill="url(#grid)" />
-                    <rect width="100%" height="100%" fill="url(#gridBold)" />
-                </svg>
-            </div>
-
-            <!-- Contenido centrado -->
-            <div class="relative z-10 h-full flex items-center justify-center -mt-16">
-                <div class="text-center">
-                    <!-- Icono principal con animación sutil -->
-                    <div class="mb-6 relative">
-                        <div
-                            class="w-24 h-24 mx-auto bg-gradient-to-br from-indigo-500/20 to-purple-600/20 rounded-2xl flex items-center justify-center backdrop-blur-sm border border-white/30 shadow-lg">
-                            <i class="fas fa-project-diagram text-4xl text-indigo-600 animate-pulse"></i>
-                        </div>
-                        <!-- Círculos decorativos -->
-                        <div class="absolute -top-2 -right-2 w-6 h-6 bg-gradient-to-br from-cyan-400 to-blue-500 rounded-full animate-bounce"
-                            style="animation-delay: 0.5s;"></div>
-                        <div class="absolute -bottom-2 -left-2 w-4 h-4 bg-gradient-to-br from-purple-400 to-pink-500 rounded-full animate-bounce"
-                            style="animation-delay: 1s;"></div>
-                    </div>
-
-                    <!-- Texto principal -->
-                    <h2 class="text-2xl font-bold text-slate-800 mb-3">
-                        Área de Trabajo
-                    </h2>
-                    <p class="text-lg text-slate-600 mb-6 max-w-md">
-                        Selecciona una opción del navbar para comenzar a crear tu diagrama
-                    </p>
-
-                    <!-- Indicadores de funcionalidad -->
-                    <div class="flex flex-wrap justify-center gap-4 max-w-lg mx-auto">
-                        <div
-                            class="flex items-center space-x-2 bg-white/80 backdrop-blur-sm px-4 py-2 rounded-full shadow-sm border border-white/50">
-                            <div class="w-3 h-3 bg-blue-500 rounded-full animate-pulse"></div>
-                            <span class="text-sm text-slate-700 font-medium">Arrastra y suelta</span>
-                        </div>
-                        <div
-                            class="flex items-center space-x-2 bg-white/80 backdrop-blur-sm px-4 py-2 rounded-full shadow-sm border border-white/50">
-                            <div class="w-3 h-3 bg-emerald-500 rounded-full animate-pulse"
-                                style="animation-delay: 0.3s;"></div>
-                            <span class="text-sm text-slate-700 font-medium">Cuadrícula inteligente</span>
-                        </div>
-                        <div
-                            class="flex items-center space-x-2 bg-white/80 backdrop-blur-sm px-4 py-2 rounded-full shadow-sm border border-white/50">
-                            <div class="w-3 h-3 bg-purple-500 rounded-full animate-pulse"
-                                style="animation-delay: 0.6s;"></div>
-                            <span class="text-sm text-slate-700 font-medium">Conexiones automáticas</span>
-                        </div>
-                    </div>
-
-                    <!-- Botón de acción sugerido -->
-                    <div class="mt-8">
-                        <button onclick="selectOption('figuras')"
-                            class="inline-flex items-center space-x-2 bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 text-white px-6 py-3 rounded-xl font-semibold shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-200">
-                            <i class="fas fa-shapes"></i>
-                            <span>Comenzar con Figuras</span>
-                        </button>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Indicador de zoom en la esquina -->
-            <div
-                class="absolute bottom-6 right-6 bg-white/90 backdrop-blur-sm px-3 py-2 rounded-lg shadow-sm border border-white/50">
-                <div class="flex items-center space-x-2 text-sm text-slate-600">
-                    <i class="fas fa-search-plus text-xs"></i>
-                    <span class="font-medium">100%</span>
-                    <div class="w-px h-4 bg-slate-300"></div>
-                    <button class="hover:text-slate-800 transition-colors" title="Ajustar al contenido">
-                        <i class="fas fa-expand-arrows-alt text-xs"></i>
-                    </button>
+        <div class="flex-1 bg-gray-50">
+            <div class="p-8">
+                <div class="text-center text-gray-500">
+                    <i class="fas fa-mouse-pointer text-4xl mb-4"></i>
+                    <p class="text-lg">Selecciona una opción del navbar para ver sus herramientas</p>
                 </div>
             </div>
         </div>
     </div>
 
-    <script>
-        // SISTEMA DE TOASTS
-        class ToastSystem {
-            constructor() {
-                this.container = document.getElementById('toast-container');
-                this.toasts = new Map();
-                this.toastCounter = 0;
-            }
+    
 
-            show(type, title, message, duration = 5000, actions = null) {
-                const id = `toast-${++this.toastCounter}`;
-                const toast = this.createToast(id, type, title, message, actions);
+<script>
+    let currentOption = null;
+let isRightPanelOpen = false;
+let isSidebarCollapsed = false;
+let showingEntityOptions = false;
+let elementCounter = 0;
+
+// Contenido para cada opción
+const panelContent = {
+    figuras: {
+        title: 'Figuras de Diagrama',
+        content: `
+            <div class="space-y-4">
+                <h3 class="text-lg font-semibold text-gray-800 mb-4">Elementos de Entidad-Relación</h3>
                 
-                this.toasts.set(id, {
-                    element: toast,
-                    timeout: duration > 0 ? setTimeout(() => this.hide(id), duration) : null
-                });
-
-                this.container.appendChild(toast);
-                
-                // Trigger animation
-                setTimeout(() => toast.classList.add('show'), 10);
-                
-                return id;
-            }
-
-            createToast(id, type, title, message, actions) {
-                const toastItem = document.createElement('div');
-                toastItem.className = 'toast-item';
-                toastItem.dataset.id = id;
-
-                let actionsHTML = '';
-                if (actions && actions.length > 0) {
-                    actionsHTML = `
-                        <div style="margin-top: 0.75rem; display: flex; gap: 0.5rem;">
-                            ${actions.map(action => `
-                                <button onclick="${action.onClick}" 
-                                    style="background: rgba(255,255,255,0.2); border: 1px solid rgba(255,255,255,0.3); 
-                                           color: white; padding: 0.4rem 0.8rem; border-radius: 8px; font-size: 0.85rem;
-                                           cursor: pointer; transition: all 0.2s ease;"
-                                    onmouseover="this.style.background='rgba(255,255,255,0.3)'"
-                                    onmouseout="this.style.background='rgba(255,255,255,0.2)'">
-                                    ${action.text}
-                                </button>
-                            `).join('')}
-                        </div>
-                    `;
-                }
-
-                toastItem.innerHTML = `
-                    <div class="toast ${type}">
-                        <button class="toast-close" onclick="toastManager.hide('${id}')">&times;</button>
-                        <h3>${title}</h3>
-                        <p>${message}</p>
-                        ${actionsHTML}
-                    </div>
-                `;
-
-                return toastItem;
-            }
-
-            hide(id) {
-                const toast = this.toasts.get(id);
-                if (!toast) return;
-
-                // Clear timeout if exists
-                if (toast.timeout) {
-                    clearTimeout(toast.timeout);
-                }
-
-                // Trigger exit animation
-                toast.element.classList.add('removing');
-                
-                // Remove from DOM after animation
-                setTimeout(() => {
-                    if (toast.element.parentNode) {
-                        toast.element.parentNode.removeChild(toast.element);
-                    }
-                    this.toasts.delete(id);
-                }, 400);
-            }
-
-            // Métodos de conveniencia
-            success(title, message, duration) {
-                return this.show('success', title, message, duration);
-            }
-
-            error(title, message, duration) {
-                return this.show('error', title, message, duration);
-            }
-
-            warning(title, message, duration) {
-                return this.show('warning', title, message, duration);
-            }
-
-            help(title, message, duration) {
-                return this.show('help', title, message, duration);
-            }
-
-            // Método para confirmación con botones
-            confirm(title, message, onConfirm, onCancel) {
-                const actions = [
-                    { text: 'Cancelar', onClick: `toastManager.hide('${this.toastCounter + 1}'); ${onCancel || ''}` },
-                    { text: 'Confirmar', onClick: `toastManager.hide('${this.toastCounter + 1}'); ${onConfirm}` }
-                ];
-                return this.show('warning', title, message, 0, actions); // 0 = no auto-close
-            }
-        }
-
-        // Instancia global
-        const toastManager = new ToastSystem();
-
-        // Función de conveniencia para mostrar toasts
-        function showToast(type, title, message, duration = 5000) {
-            return toastManager.show(type, title, message, duration);
-        }
-
-        // RESTO DEL CÓDIGO ORIGINAL
-        let currentOption = null;
-        let isRightPanelOpen = false;
-        let isSidebarCollapsed = false;
-
-        // Contenido para cada opción
-        const panelContent = {
-            figuras: {
-                title: 'Figuras de Diagrama',
-                content: `
-                    <div class="space-y-4">
-                        <h3 class="text-lg font-semibold text-gray-800 mb-4">Elementos de Entidad-Relación</h3>
-                        
-                        <div class="space-y-3">
-                            <div class="p-3 border border-slate-200 rounded-xl hover:shadow-md hover:bg-white/80 transition-all duration-200 cursor-pointer group">
-                                <div class="flex items-center space-x-3">
-                                    <div class="w-10 h-10 bg-gradient-to-br from-blue-500 to-cyan-600 rounded-xl flex items-center justify-center shadow-sm group-hover:shadow-md transition-shadow">
-                                        <i class="fas fa-table text-white"></i>
-                                    </div>
-                                    <div>
-                                        <div class="font-semibold text-slate-800">Tabla/Entidad</div>
-                                        <div class="text-sm text-slate-500">Representa una entidad de base de datos</div>
-                                    </div>
-                                </div>
+                <div class="space-y-3">
+                    <div id="tablaEntidad" class="p-3 border border-slate-200 rounded-xl hover:shadow-md hover:bg-white/80 transition-all duration-200 cursor-pointer group">
+                        <div class="flex items-center space-x-3">
+                            <div class="w-10 h-10 bg-gradient-to-br from-blue-500 to-cyan-600 rounded-xl flex items-center justify-center shadow-sm group-hover:shadow-md transition-shadow">
+                                <i class="fas fa-table text-white"></i>
                             </div>
-                            
-                            <div class="p-3 border border-slate-200 rounded-xl hover:shadow-md hover:bg-white/80 transition-all duration-200 cursor-pointer group">
-                                <div class="flex items-center space-x-3">
-                                    <div class="w-10 h-10 bg-gradient-to-br from-emerald-500 to-teal-600 rounded-xl flex items-center justify-center shadow-sm group-hover:shadow-md transition-shadow">
-                                        <i class="fas fa-link text-white"></i>
-                                    </div>
-                                    <div>
-                                        <div class="font-semibold text-slate-800">Relación</div>
-                                        <div class="text-sm text-slate-500">Conecta entidades entre sí</div>
-                                    </div>
-                                </div>
+                            <div>
+                                <div class="font-semibold text-slate-800">Tabla/Entidad</div>
+                                <div class="text-sm text-slate-500">Representa una entidad de base de datos</div>
                             </div>
-                            
-                            <div class="p-3 border border-slate-200 rounded-xl hover:shadow-md hover:bg-white/80 transition-all duration-200 cursor-pointer group">
-                                <div class="flex items-center space-x-3">
-                                    <div class="w-10 h-10 bg-gradient-to-br from-violet-500 to-purple-600 rounded-xl flex items-center justify-center shadow-sm group-hover:shadow-md transition-shadow">
-                                        <i class="fas fa-key text-white"></i>
-                                    </div>
-                                    <div>
-                                        <div class="font-semibold text-slate-800">Clave Primaria</div>
-                                        <div class="text-sm text-slate-500">Identificador único de la entidad</div>
-                                    </div>
-                                </div>
-                            </div>
-                            
-                            <div class="p-3 border border-slate-200 rounded-xl hover:shadow-md hover:bg-white/80 transition-all duration-200 cursor-pointer group">
-                                <div class="flex items-center space-x-3">
-                                    <div class="w-10 h-10 bg-gradient-to-br from-amber-500 to-orange-600 rounded-xl flex items-center justify-center shadow-sm group-hover:shadow-md transition-shadow">
-                                        <i class="fas fa-external-link-alt text-white"></i>
-                                    </div>
-                                    <div>
-                                        <div class="font-semibold text-slate-800">Clave Foránea</div>
-                                        <div class="text-sm text-slate-500">Referencia a otra entidad</div>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                        
-                        <div class="mt-6 p-4 bg-gradient-to-r from-blue-50 to-indigo-50 rounded-xl border border-blue-200">
-                            <p class="text-sm text-slate-700">
-                                <i class="fas fa-info-circle text-blue-500 mr-2"></i>
-                                Arrastra los elementos al área de trabajo para crear tu diagrama
-                            </p>
                         </div>
                     </div>
+<<<<<<< Updated upstream
                 `
             },
             codigo: {
-                title: 'Generador de Código SQL',
+                title: 'Editor de Código',
                 content: `
-                    <div class="space-y-6">
-                        <div class="bg-gradient-to-r from-emerald-50 to-teal-50 p-4 rounded-xl border border-emerald-200">
-                            <div class="flex items-center space-x-3 mb-3">
-                                <div class="w-10 h-10 bg-gradient-to-br from-emerald-500 to-teal-600 rounded-xl flex items-center justify-center shadow-sm">
-                                    <i class="fas fa-database text-white"></i>
-                                </div>
-                                <div>
-                                    <h3 class="text-lg font-semibold text-emerald-800">SQL Generator</h3>
-                                    <p class="text-sm text-emerald-600">Genera código SQL automáticamente desde tu diagrama</p>
-                                </div>
-                            </div>
-                            
-                            <div class="flex space-x-2">
-                                <button onclick="generateSQL()" class="flex-1 bg-emerald-600 hover:bg-emerald-700 text-white px-4 py-2 rounded-lg font-medium transition-colors duration-200">
-                                    <i class="fas fa-magic mr-2"></i>
-                                    Generar SQL
-                                </button>
-                                <button onclick="copySQL()" class="px-4 py-2 border border-emerald-300 text-emerald-700 rounded-lg hover:bg-emerald-50 transition-colors duration-200" title="Copiar código">
-                                    <i class="fas fa-copy"></i>
-                                </button>
-                                <button onclick="downloadSQL()" class="px-4 py-2 border border-emerald-300 text-emerald-700 rounded-lg hover:bg-emerald-50 transition-colors duration-200" title="Descargar archivo">
-                                    <i class="fas fa-download"></i>
-                                </button>
-                            </div>
-                        </div>
+                    <div class="space-y-4">
+                        <h3 class="text-lg font-semibold text-gray-800 mb-4">Herramientas de Código</h3>
                         
                         <div class="space-y-3">
-                            <div class="flex items-center justify-between">
-                                <label class="text-sm font-semibold text-gray-700">Editor SQL</label>
-                                <div class="flex items-center space-x-2">
-                                    <button onclick="expandSQLEditor()" class="text-xs text-gray-500 hover:text-gray-700 bg-gray-100 hover:bg-gray-200 px-2 py-1 rounded transition-colors">
-                                        <i id="expandIcon" class="fas fa-expand-alt mr-1"></i>
-                                        <span id="expandText">Expandir</span>
-                                    </button>
-                                    <button onclick="clearSQL()" class="text-xs text-gray-500 hover:text-gray-700 bg-gray-100 hover:bg-gray-200 px-2 py-1 rounded transition-colors">
-                                        <i class="fas fa-eraser mr-1"></i>
-                                        Limpiar
-                                    </button>
+                            <div class="p-3 border border-gray-200 rounded-lg hover:shadow-sm transition-shadow cursor-pointer">
+                                <div class="flex items-center space-x-3">
+                                    <div class="w-8 h-8 bg-blue-100 rounded flex items-center justify-center">
+                                        <i class="fas fa-database text-blue-600 text-sm"></i>
+                                    </div>
+                                    <div>
+                                        <div class="font-medium text-gray-800">SQL Generator</div>
+                                        <div class="text-sm text-gray-500">Genera código SQL desde el diagrama</div>
+                                    </div>
                                 </div>
                             </div>
                             
-                            <div class="relative">
-                                <textarea id="sqlEditor" 
-                                    class="w-full h-64 p-4 border border-gray-300 rounded-xl text-sm font-mono bg-gray-50 focus:bg-white focus:border-emerald-400 focus:ring-2 focus:ring-emerald-100 transition-all duration-200 resize-none" 
-                                    placeholder="-- Tu código SQL aparecerá aquí...
--- Ejemplo:
-CREATE TABLE usuarios (
-    id INT PRIMARY KEY AUTO_INCREMENT,
-    nombre VARCHAR(100) NOT NULL,
-    email VARCHAR(150) UNIQUE NOT NULL,
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-);"></textarea>
-                                <div class="absolute bottom-3 right-3 text-xs text-gray-400 bg-white px-2 py-1 rounded shadow-sm">
-                                    <i class="fas fa-code mr-1"></i>SQL
+                            <div class="p-3 border border-gray-200 rounded-lg hover:shadow-sm transition-shadow cursor-pointer">
+                                <div class="flex items-center space-x-3">
+                                    <div class="w-8 h-8 bg-green-100 rounded flex items-center justify-center">
+                                        <i class="fab fa-js text-green-600 text-sm"></i>
+                                    </div>
+                                    <div>
+                                        <div class="font-medium text-gray-800">JavaScript Models</div>
+                                        <div class="text-sm text-gray-500">Genera modelos en JavaScript</div>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="p-3 border border-gray-200 rounded-lg hover:shadow-sm transition-shadow cursor-pointer">
+                                <div class="flex items-center space-x-3">
+                                    <div class="w-8 h-8 bg-red-100 rounded flex items-center justify-center">
+                                        <i class="fab fa-python text-red-600 text-sm"></i>
+                                    </div>
+                                    <div>
+                                        <div class="font-medium text-gray-800">Python Classes</div>
+                                        <div class="text-sm text-gray-500">Genera clases en Python</div>
+                                    </div>
                                 </div>
                             </div>
                         </div>
                         
-                        <div class="bg-blue-50 border border-blue-200 rounded-xl p-4">
-                            <div class="flex items-start space-x-3">
-                                <div class="w-8 h-8 bg-blue-100 rounded-lg flex items-center justify-center flex-shrink-0 mt-0.5">
-                                    <i class="fas fa-lightbulb text-blue-600 text-sm"></i>
-                                </div>
-                                <div>
-                                    <h4 class="text-sm font-semibold text-blue-800 mb-2">Consejos para el código SQL:</h4>
-                                    <ul class="text-sm text-blue-700 space-y-1">
-                                        <li>• Usa nombres descriptivos para tablas y campos</li>
-                                        <li>• Siempre define claves primarias</li>
-                                        <li>• Considera las restricciones de integridad</li>
-                                        <li>• Usa índices para campos que se consultan frecuentemente</li>
-                                    </ul>
-                                </div>
-                            </div>
+                        <div class="mt-6">
+                            <textarea class="w-full h-32 p-3 border border-gray-200 rounded-lg text-sm font-mono" 
+                                      placeholder="// Tu código aparecerá aquí..."></textarea>
                         </div>
                     </div>
                 `
@@ -876,64 +427,43 @@ CREATE TABLE usuarios (
 
         function toggleSidebar() {
             const sidebar = document.getElementById('sidebar');
-            const sidebarTexts = document.querySelectorAll('.sidebar-text');
-            const tooltips = document.querySelectorAll('.tooltip');
-
             isSidebarCollapsed = !isSidebarCollapsed;
 
             if (isSidebarCollapsed) {
-                sidebarTexts.forEach(text => {
-                    text.style.display = 'none';
-                });
+                sidebar.classList.remove('sidebar-expanded');
+                sidebar.classList.add('sidebar-collapsed');
 
-                setTimeout(() => {
-                    sidebar.classList.remove('sidebar-expanded');
-                    sidebar.classList.add('sidebar-collapsed');
-                }, 50);
-
-                setTimeout(() => {
-                    tooltips.forEach(tooltip => {
-                        tooltip.style.display = 'block';
-                    });
-                }, 400);
-
+                // Cerrar panel derecho si está abierto
                 if (isRightPanelOpen) {
                     closeRightPanel();
                 }
             } else {
                 sidebar.classList.remove('sidebar-collapsed');
                 sidebar.classList.add('sidebar-expanded');
-
-                tooltips.forEach(tooltip => {
-                    tooltip.style.display = 'none';
-                });
-
-                setTimeout(() => {
-                    sidebarTexts.forEach(text => {
-                        text.style.display = 'block';
-                    });
-                }, 300);
             }
         }
 
         function selectOption(option) {
             if (isSidebarCollapsed) {
+                // Si está colapsado, expandir primero
                 toggleSidebar();
                 setTimeout(() => {
                     selectOptionInternal(option);
-                }, 400);
+                }, 300);
             } else {
                 selectOptionInternal(option);
             }
         }
 
         function selectOptionInternal(option) {
+            // Remover selección anterior
             document.querySelectorAll('.nav-option').forEach(btn => {
-                btn.classList.remove('bg-white', 'shadow-md', 'border-l-4', 'border-indigo-500');
+                btn.classList.remove('selected-option');
             });
 
+            // Añadir selección actual
             const currentBtn = document.querySelector(`[data-option="${option}"]`);
-            currentBtn.classList.add('bg-white', 'shadow-md', 'border-l-4', 'border-indigo-500');
+            currentBtn.classList.add('selected-option');
 
             if (currentOption === option && isRightPanelOpen) {
                 closeRightPanel();
@@ -951,6 +481,7 @@ CREATE TABLE usuarios (
             panel.classList.remove('panel-collapsed');
             panel.classList.add('panel-expanded');
 
+            // Cargar contenido
             content.innerHTML = `
                 <div class="slide-in">
                     <div class="flex items-center justify-between mb-6 pb-4 border-b border-slate-200">
@@ -960,158 +491,1264 @@ CREATE TABLE usuarios (
                         </button>
                     </div>
                     ${panelContent[option].content}
+=======
+                    
+                    <div id="relacionElement" class="p-3 border border-slate-200 rounded-xl hover:shadow-md hover:bg-white/80 transition-all duration-200 cursor-pointer group">
+                        <div class="flex items-center space-x-3">
+                            <div class="w-10 h-10 bg-gradient-to-br from-emerald-500 to-teal-600 rounded-xl flex items-center justify-center shadow-sm group-hover:shadow-md transition-shadow">
+                                <i class="fas fa-link text-white"></i>
+                            </div>
+                            <div>
+                                <div class="font-semibold text-slate-800">Relación</div>
+                                <div class="text-sm text-slate-500">Conecta entidades entre sí</div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div id="clavePrimariaElement" class="p-3 border border-slate-200 rounded-xl hover:shadow-md hover:bg-white/80 transition-all duration-200 cursor-pointer group">
+                        <div class="flex items-center space-x-3">
+                            <div class="w-10 h-10 bg-gradient-to-br from-violet-500 to-purple-600 rounded-xl flex items-center justify-center shadow-sm group-hover:shadow-md transition-shadow">
+                                <i class="fas fa-key text-white"></i>
+                            </div>
+                            <div>
+                                <div class="font-semibold text-slate-800">Clave Primaria</div>
+                                <div class="text-sm text-slate-500">Identificador único de la entidad</div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div id="claveForaneaElement" class="p-3 border border-slate-200 rounded-xl hover:shadow-md hover:bg-white/80 transition-all duration-200 cursor-pointer group">
+                        <div class="flex items-center space-x-3">
+                            <div class="w-10 h-10 bg-gradient-to-br from-amber-500 to-orange-600 rounded-xl flex items-center justify-center shadow-sm group-hover:shadow-md transition-shadow">
+                                <i class="fas fa-external-link-alt text-white"></i>
+                            </div>
+                            <div>
+                                <div class="font-semibold text-slate-800">Clave Foránea</div>
+                                <div class="text-sm text-slate-500">Referencia a otra entidad</div>
+                            </div>
+                        </div>
+                    </div>
                 </div>
-            `;
-
-            isRightPanelOpen = true;
-        }
-
-        function closeRightPanel() {
-            const panel = document.getElementById('rightPanel');
-            panel.classList.remove('panel-expanded');
-            panel.classList.add('panel-collapsed');
-
-            document.querySelectorAll('.nav-option').forEach(btn => {
-                btn.classList.remove('bg-white', 'shadow-md', 'border-l-4', 'border-indigo-500');
-            });
-
-            isRightPanelOpen = false;
-            currentOption = null;
-        }
-
-        // Funciones del editor SQL con toasts integrados
-        let isExpanded = false;
-        let originalHeight = '16rem';
-
-        function expandSQLEditor() {
-            const editor = document.getElementById('sqlEditor');
-            const icon = document.getElementById('expandIcon');
-            const text = document.getElementById('expandText');
-
-            if (!isExpanded) {
-                editor.style.height = '32rem';
-                icon.className = 'fas fa-compress-alt mr-1';
-                text.textContent = 'Contraer';
-                isExpanded = true;
-                showToast('success', 'Editor Expandido', 'El editor ahora tiene más espacio para trabajar');
-            } else {
-                editor.style.height = originalHeight;
-                icon.className = 'fas fa-expand-alt mr-1';
-                text.textContent = 'Expandir';
-                isExpanded = false;
-                showToast('help', 'Editor Contraído', 'El editor volvió a su tamaño normal');
-            }
-        }
-
-        function clearSQL() {
-            const editor = document.getElementById('sqlEditor');
-            if (editor.value.trim() !== '') {
-                // Usar toast de confirmación en lugar de confirm nativo
-                toastManager.confirm(
-                    '¿Limpiar código SQL?', 
-                    '¿Estás seguro de que quieres eliminar todo el código SQL? Esta acción no se puede deshacer.',
-                    `document.getElementById('sqlEditor').value = ''; document.getElementById('sqlEditor').focus(); showToast('success', 'Código Limpiado', 'El editor SQL ha sido limpiado correctamente');`,
-                    `showToast('help', 'Cancelado', 'El código SQL se mantiene intacto');`
-                );
-            } else {
-                showToast('warning', 'Editor Vacío', 'No hay código SQL para limpiar');
-            }
-        }
-
-        function copySQL() {
-            const editor = document.getElementById('sqlEditor');
-            if (editor.value.trim() === '') {
-                showToast('warning', 'Sin Contenido', 'No hay código SQL para copiar');
-                return;
-            }
-
-            navigator.clipboard.writeText(editor.value).then(() => {
-                showToast('success', '¡Copiado!', 'El código SQL se ha copiado al portapapeles');
-            }).catch(() => {
-                showToast('error', 'Error al Copiar', 'No se pudo copiar el código al portapapeles');
-            });
-        }
-
-        function downloadSQL() {
-            const editor = document.getElementById('sqlEditor');
-            if (editor.value.trim() === '') {
-                showToast('warning', 'Sin Contenido', 'No hay código SQL para descargar');
-                return;
-            }
-
-            try {
-                const blob = new Blob([editor.value], { type: 'text/plain' });
-                const url = window.URL.createObjectURL(blob);
-                const a = document.createElement('a');
-                a.href = url;
-                a.download = 'schema.sql';
-                document.body.appendChild(a);
-                a.click();
-                document.body.removeChild(a);
-                window.URL.revokeObjectURL(url);
                 
-                showToast('success', 'Descarga Iniciada', 'El archivo schema.sql se está descargando');
-            } catch (error) {
-                showToast('error', 'Error de Descarga', 'No se pudo descargar el archivo SQL');
-            }
-        }
-
-        function generateSQL() {
-            const editor = document.getElementById('sqlEditor');
-            const sampleSQL = `-- Esquema de ejemplo generado por GraphUs
-CREATE DATABASE IF NOT EXISTS mi_proyecto;
-USE mi_proyecto;
-
+                <div class="mt-6 p-4 bg-gradient-to-r from-blue-50 to-indigo-50 rounded-xl border border-blue-200">
+                    <p class="text-sm text-slate-700">
+                        <i class="fas fa-info-circle text-blue-500 mr-2"></i>
+                        Haz clic en "Tabla/Entidad" para ver los tipos disponibles
+                    </p>
+                </div>
+            </div>
+        `,
+        entityOptions: `
+            <div class="space-y-4">
+                <div class="flex items-center justify-between mb-4">
+                    <h3 class="text-lg font-semibold text-gray-800">Tipos de Entidad</h3>
+                    <button id="backToMain" class="text-blue-600 hover:text-blue-800 text-sm font-medium transition-colors">
+                        <i class="fas fa-arrow-left mr-1"></i>Volver
+                    </button>
+                </div>
+                
+                <div class="space-y-3">
+                    <div class="entity-option p-3 border border-slate-200 rounded-xl hover:shadow-md hover:bg-blue-50 transition-all duration-200 cursor-pointer group" data-entity="entidad-simple">
+                        <div class="flex items-center justify-between">
+                            <div class="flex items-center space-x-3">
+                                <div class="w-12 h-12 bg-gradient-to-br from-blue-600 to-blue-800 rounded-lg flex items-center justify-center shadow-sm">
+                                    <div class="bg-white border border-gray-300 rounded text-xs p-1">
+                                        <div class="bg-gray-100 px-2 py-1 text-center font-bold text-gray-700">Entity</div>
+                                        <div class="border-t border-gray-300">
+                                            <div class="px-1 py-0.5 text-gray-600">Field</div>
+                                            <div class="px-1 py-0.5 text-gray-600">Field</div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div>
+                                    <div class="font-semibold text-slate-800">Entidad Simple</div>
+                                    <div class="text-sm text-slate-500">Solo campos básicos</div>
+                                </div>
+                            </div>
+                            <i class="fas fa-plus text-blue-600 opacity-0 group-hover:opacity-100 transition-opacity"></i>
+                        </div>
+                    </div>
+                    
+                    <div class="entity-option p-3 border border-slate-200 rounded-xl hover:shadow-md hover:bg-green-50 transition-all duration-200 cursor-pointer group" data-entity="entidad-con-llaves">
+                        <div class="flex items-center justify-between">
+                            <div class="flex items-center space-x-3">
+                                <div class="w-12 h-12 bg-gradient-to-br from-green-600 to-green-800 rounded-lg flex items-center justify-center shadow-sm">
+                                    <div class="bg-white border border-gray-300 rounded text-xs p-1">
+                                        <div class="bg-gray-100 px-2 py-1 text-center font-bold text-gray-700">Entity</div>
+                                        <div class="border-t border-gray-300">
+                                            <div class="px-1 py-0.5 text-gray-600 flex items-center">
+                                                <i class="fas fa-key text-yellow-500 mr-1" style="font-size: 8px;"></i>Key
+                                            </div>
+                                            <div class="px-1 py-0.5 text-gray-600">Field</div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div>
+                                    <div class="font-semibold text-slate-800">Entidad con Llaves</div>
+                                    <div class="text-sm text-slate-500">Incluye claves primarias</div>
+                                </div>
+                            </div>
+                            <i class="fas fa-plus text-green-600 opacity-0 group-hover:opacity-100 transition-opacity"></i>
+                        </div>
+                    </div>
+                    
+                    <div class="entity-option p-3 border border-slate-200 rounded-xl hover:shadow-md hover:bg-purple-50 transition-all duration-200 cursor-pointer group" data-entity="entidad-con-tipos">
+                        <div class="flex items-center justify-between">
+                            <div class="flex items-center space-x-3">
+                                <div class="w-12 h-12 bg-gradient-to-br from-purple-600 to-purple-800 rounded-lg flex items-center justify-center shadow-sm">
+                                    <div class="bg-white border border-gray-300 rounded text-xs p-1">
+                                        <div class="bg-gray-100 px-2 py-1 text-center font-bold text-gray-700">Entity</div>
+                                        <div class="border-t border-gray-300">
+                                            <div class="px-1 py-0.5 text-gray-600 flex justify-between">
+                                                <span>Field</span><span class="text-blue-600">Type</span>
+                                            </div>
+                                            <div class="px-1 py-0.5 text-gray-600 flex justify-between">
+                                                <span>Field</span><span class="text-blue-600">Type</span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div>
+                                    <div class="font-semibold text-slate-800">Entidad con Tipos</div>
+                                    <div class="text-sm text-slate-500">Campos con tipos de datos</div>
+                                </div>
+                            </div>
+                            <i class="fas fa-plus text-purple-600 opacity-0 group-hover:opacity-100 transition-opacity"></i>
+                        </div>
+                    </div>
+                    
+                    <div class="entity-option p-3 border border-slate-200 rounded-xl hover:shadow-md hover:bg-orange-50 transition-all duration-200 cursor-pointer group" data-entity="entidad-completa">
+                        <div class="flex items-center justify-between">
+                            <div class="flex items-center space-x-3">
+                                <div class="w-12 h-12 bg-gradient-to-br from-orange-600 to-orange-800 rounded-lg flex items-center justify-center shadow-sm">
+                                    <div class="bg-white border border-gray-300 rounded text-xs p-1">
+                                        <div class="bg-gray-100 px-2 py-1 text-center font-bold text-gray-700">Entity</div>
+                                        <div class="border-t border-gray-300">
+                                            <div class="px-1 py-0.5 text-gray-600 flex">
+                                                <i class="fas fa-key text-yellow-500 mr-1" style="font-size: 8px;"></i>
+                                                <span class="flex-1">Field</span>
+                                                <span class="text-blue-600">Type</span>
+                                            </div>
+                                            <div class="px-1 py-0.5 text-gray-600 flex justify-between">
+                                                <span>Field</span><span class="text-blue-600">Type</span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div>
+                                    <div class="font-semibold text-slate-800">Entidad Completa</div>
+                                    <div class="text-sm text-slate-500">Llaves, campos y tipos</div>
+                                </div>
+                            </div>
+                            <i class="fas fa-plus text-orange-600 opacity-0 group-hover:opacity-100 transition-opacity"></i>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="mt-6 p-4 bg-gradient-to-r from-blue-50 to-indigo-50 rounded-xl border border-blue-200">
+                    <p class="text-sm text-slate-700">
+                        <i class="fas fa-mouse-pointer text-blue-500 mr-2"></i>
+                        Haz clic en cualquier tipo para agregarlo al área de trabajo
+                    </p>
+                </div>
+            </div>
+        `
+    },
+    codigo: {
+        title: 'Generador de Código SQL',
+        content: `
+            <div class="space-y-6">
+                <div class="bg-gradient-to-r from-emerald-50 to-teal-50 p-4 rounded-xl border border-emerald-200">
+                    <div class="flex items-center space-x-3 mb-3">
+                        <div class="w-10 h-10 bg-gradient-to-br from-emerald-500 to-teal-600 rounded-xl flex items-center justify-center shadow-sm">
+                            <i class="fas fa-database text-white"></i>
+                        </div>
+                        <div>
+                            <h3 class="text-lg font-semibold text-emerald-800">SQL Generator</h3>
+                            <p class="text-sm text-emerald-600">Genera código SQL automáticamente desde tu diagrama</p>
+                        </div>
+                    </div>
+                    
+                    <div class="flex space-x-2">
+                        <button onclick="generateSQL()" class="flex-1 bg-emerald-600 hover:bg-emerald-700 text-white px-4 py-2 rounded-lg font-medium transition-colors duration-200">
+                            <i class="fas fa-magic mr-2"></i>
+                            Generar SQL
+                        </button>
+                        <button onclick="copySQL()" class="px-4 py-2 border border-emerald-300 text-emerald-700 rounded-lg hover:bg-emerald-50 transition-colors duration-200" title="Copiar código">
+                            <i class="fas fa-copy"></i>
+                        </button>
+                        <button onclick="downloadSQL()" class="px-4 py-2 border border-emerald-300 text-emerald-700 rounded-lg hover:bg-emerald-50 transition-colors duration-200" title="Descargar archivo">
+                            <i class="fas fa-download"></i>
+                        </button>
+                    </div>
+                </div>
+                
+                <div class="space-y-3">
+                    <div class="flex items-center justify-between">
+                        <label class="text-sm font-semibold text-gray-700">Editor SQL</label>
+                        <div class="flex items-center space-x-2">
+                            <button onclick="expandSQLEditor()" class="text-xs text-gray-500 hover:text-gray-700 bg-gray-100 hover:bg-gray-200 px-2 py-1 rounded transition-colors">
+                                <i id="expandIcon" class="fas fa-expand-alt mr-1"></i>
+                                <span id="expandText">Expandir</span>
+                            </button>
+                            <button onclick="clearSQL()" class="text-xs text-gray-500 hover:text-gray-700 bg-gray-100 hover:bg-gray-200 px-2 py-1 rounded transition-colors">
+                                <i class="fas fa-eraser mr-1"></i>
+                                Limpiar
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <div class="relative">
+                        <textarea id="sqlEditor" 
+                            class="w-full h-64 p-4 border border-gray-300 rounded-xl text-sm font-mono bg-gray-50 focus:bg-white focus:border-emerald-400 focus:ring-2 focus:ring-emerald-100 transition-all duration-200 resize-none" 
+                            placeholder="-- Tu código SQL aparecerá aquí...
+-- Ejemplo:
 CREATE TABLE usuarios (
     id INT PRIMARY KEY AUTO_INCREMENT,
     nombre VARCHAR(100) NOT NULL,
     email VARCHAR(150) UNIQUE NOT NULL,
-    password VARCHAR(255) NOT NULL,
-    fecha_registro TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    activo BOOLEAN DEFAULT TRUE
-);
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);"></textarea>
+                        <div class="absolute bottom-3 right-3 text-xs text-gray-400 bg-white px-2 py-1 rounded shadow-sm">
+                            <i class="fas fa-code mr-1"></i>SQL
+                        </div>
+                    </div>
+>>>>>>> Stashed changes
+                </div>
+                
+                <div class="bg-blue-50 border border-blue-200 rounded-xl p-4">
+                    <div class="flex items-start space-x-3">
+                        <div class="w-8 h-8 bg-blue-100 rounded-lg flex items-center justify-center flex-shrink-0 mt-0.5">
+                            <i class="fas fa-lightbulb text-blue-600 text-sm"></i>
+                        </div>
+                        <div>
+                            <h4 class="text-sm font-semibold text-blue-800 mb-2">Consejos para el código SQL:</h4>
+                            <ul class="text-sm text-blue-700 space-y-1">
+                                <li>• Usa nombres descriptivos para tablas y campos</li>
+                                <li>• Siempre define claves primarias</li>
+                                <li>• Considera las restricciones de integridad</li>
+                                <li>• Usa índices para campos que se consultan frecuentemente</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        `
+    },
+    importar: {
+        title: 'Importar Contenido',
+        content: `
+            <div class="space-y-4">
+                <h3 class="text-lg font-semibold text-gray-800 mb-4">Opciones de Importación</h3>
+                
+                <div class="space-y-3">
+                    <div class="p-4 border-2 border-dashed border-gray-300 rounded-lg text-center hover:border-gray-400 transition-colors cursor-pointer">
+                        <i class="fas fa-file-code text-2xl text-gray-400 mb-2"></i>
+                        <div class="font-medium text-gray-700">Importar Código SQL</div>
+                        <div class="text-sm text-gray-500">Arrastra tu archivo .sql aquí</div>
+                    </div>
+                    
+                    <div class="p-4 border-2 border-dashed border-gray-300 rounded-lg text-center hover:border-gray-400 transition-colors cursor-pointer">
+                        <i class="fas fa-file-alt text-2xl text-gray-400 mb-2"></i>
+                        <div class="font-medium text-gray-700">Importar JSON Schema</div>
+                        <div class="text-sm text-gray-500">Arrastra tu archivo .json aquí</div>
+                    </div>
+                    
+                    <div class="p-4 border-2 border-dashed border-gray-300 rounded-lg text-center hover:border-gray-400 transition-colors cursor-pointer">
+                        <i class="fas fa-file-image text-2xl text-gray-400 mb-2"></i>
+                        <div class="font-medium text-gray-700">Importar Diagrama</div>
+                        <div class="text-sm text-gray-500">Formatos: .xml, .drawio</div>
+                    </div>
+                </div>
+                
+                <div class="mt-6 p-4 bg-gray-50 rounded-lg">
+                    <p class="text-sm text-gray-600">
+                        <i class="fas fa-upload text-blue-500 mr-2"></i>
+                        También puedes importar desde URL o pegar código directamente
+                    </p>
+                </div>
+            </div>
+        `
+    },
+    exportar: {
+        title: 'Exportar Proyecto',
+        content: `
+            <div class="space-y-4">
+                <h3 class="text-lg font-semibold text-gray-800 mb-4">Opciones de Exportación</h3>
+                
+                <div class="space-y-3">
+                    <div class="p-3 border border-gray-200 rounded-lg hover:shadow-sm transition-shadow cursor-pointer">
+                        <div class="flex items-center space-x-3">
+                            <div class="w-8 h-8 bg-blue-100 rounded flex items-center justify-center">
+                                <i class="fas fa-image text-blue-600 text-sm"></i>
+                            </div>
+                            <div>
+                                <div class="font-medium text-gray-800">Exportar como Imagen</div>
+                                <div class="text-sm text-gray-500">PNG, JPG, SVG</div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="p-3 border border-gray-200 rounded-lg hover:shadow-sm transition-shadow cursor-pointer">
+                        <div class="flex items-center space-x-3">
+                            <div class="w-8 h-8 bg-green-100 rounded flex items-center justify-center">
+                                <i class="fas fa-file-code text-green-600 text-sm"></i>
+                            </div>
+                            <div>
+                                <div class="font-medium text-gray-800">Exportar Código SQL</div>
+                                <div class="text-sm text-gray-500">Script completo de la base de datos</div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="p-3 border border-gray-200 rounded-lg hover:shadow-sm transition-shadow cursor-pointer">
+                        <div class="flex items-center space-x-3">
+                            <div class="w-8 h-8 bg-purple-100 rounded flex items-center justify-center">
+                                <i class="fas fa-file-export text-purple-600 text-sm"></i>
+                            </div>
+                            <div>
+                                <div class="font-medium text-gray-800">Exportar Proyecto</div>
+                                <div class="text-sm text-gray-500">Archivo .graphus para compartir</div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="p-3 border border-gray-200 rounded-lg hover:shadow-sm transition-shadow cursor-pointer">
+                        <div class="flex items-center space-x-3">
+                            <div class="w-8 h-8 bg-yellow-100 rounded flex items-center justify-center">
+                                <i class="fas fa-file-pdf text-yellow-600 text-sm"></i>
+                            </div>
+                            <div>
+                                <div class="font-medium text-gray-800">Exportar Documentación</div>
+                                <div class="text-sm text-gray-500">PDF con diagramas y código</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        `
+    }
+};
 
-CREATE TABLE perfiles (
-    id INT PRIMARY KEY AUTO_INCREMENT,
-    usuario_id INT NOT NULL,
-    bio TEXT,
-    avatar VARCHAR(255),
-    fecha_nacimiento DATE,
-    FOREIGN KEY (usuario_id) REFERENCES usuarios(id) ON DELETE CASCADE
-);
+// Definiciones de elementos ER con estilos mejorados
+const erElements = {
+    'entidad-simple': {
+        html: `<div class="bg-white border-2 border-gray-400 rounded-lg shadow-lg min-w-40 select-none">
+                 <div class="bg-gray-100 border-b-2 border-gray-400 p-2 text-center font-bold text-gray-800 rounded-t-lg cursor-move">
+                   <span contenteditable="true" class="entity-name">Entity</span>
+                 </div>
+                 <div class="p-2 space-y-1">
+                   <div class="text-sm text-gray-700 py-1 px-2 border-b border-gray-200" contenteditable="true">Field1</div>
+                   <div class="text-sm text-gray-700 py-1 px-2 border-b border-gray-200" contenteditable="true">Field2</div>
+                   <div class="text-sm text-gray-700 py-1 px-2" contenteditable="true">Field3</div>
+                 </div>
+               </div>`,
+        color: 'blue'
+    },
+    'entidad-con-llaves': {
+        html: `<div class="bg-white border-2 border-gray-400 rounded-lg shadow-lg min-w-40 select-none">
+                 <div class="bg-gray-100 border-b-2 border-gray-400 p-2 text-center font-bold text-gray-800 rounded-t-lg cursor-move">
+                   <span contenteditable="true" class="entity-name">Entity</span>
+                 </div>
+                 <div class="p-2 space-y-1">
+                   <div class="text-sm text-gray-700 py-1 px-2 border-b border-gray-200 flex items-center">
+                     <i class="fas fa-key text-yellow-500 mr-2 text-xs"></i>
+                     <span contenteditable="true">KeyField1</span>
+                   </div>
+                   <div class="text-sm text-gray-700 py-1 px-2 border-b border-gray-200 flex items-center">
+                     <i class="fas fa-key text-yellow-500 mr-2 text-xs"></i>
+                     <span contenteditable="true">KeyField2</span>
+                   </div>
+                   <div class="text-sm text-gray-700 py-1 px-2" contenteditable="true">Field</div>
+                 </div>
+               </div>`,
+        color: 'green'
+    },
+    'entidad-con-tipos': {
+        html: `<div class="bg-white border-2 border-gray-400 rounded-lg shadow-lg min-w-48 select-none">
+                 <div class="bg-gray-100 border-b-2 border-gray-400 p-2 text-center font-bold text-gray-800 rounded-t-lg cursor-move">
+                   <span contenteditable="true" class="entity-name">Entity</span>
+                 </div>
+                 <div class="p-2 space-y-1">
+                   <div class="text-sm py-1 px-2 border-b border-gray-200 flex justify-between">
+                     <span class="text-gray-700" contenteditable="true">Field1</span>
+                     <span class="text-blue-600 font-medium text-xs" contenteditable="true">VARCHAR</span>
+                   </div>
+                   <div class="text-sm py-1 px-2 border-b border-gray-200 flex justify-between">
+                     <span class="text-gray-700" contenteditable="true">Field2</span>
+                     <span class="text-blue-600 font-medium text-xs" contenteditable="true">INT</span>
+                   </div>
+                   <div class="text-sm py-1 px-2 flex justify-between">
+                     <span class="text-gray-700" contenteditable="true">Field3</span>
+                     <span class="text-blue-600 font-medium text-xs" contenteditable="true">TEXT</span>
+                   </div>
+                 </div>
+               </div>`,
+        color: 'purple'
+    },
+    'entidad-completa': {
+        html: `<div class="bg-white border-2 border-gray-400 rounded-lg shadow-lg min-w-52 select-none">
+                 <div class="bg-gray-100 border-b-2 border-gray-400 p-2 text-center font-bold text-gray-800 rounded-t-lg cursor-move">
+                   <span contenteditable="true" class="entity-name">Entity</span>
+                 </div>
+                 <div class="p-2 space-y-1">
+                   <div class="text-sm py-1 px-2 border-b border-gray-200 flex justify-between items-center">
+                     <div class="flex items-center">
+                       <i class="fas fa-key text-yellow-500 mr-2 text-xs"></i>
+                       <span class="text-gray-700" contenteditable="true">ID</span>
+                     </div>
+                     <span class="text-blue-600 font-medium text-xs" contenteditable="true">INT</span>
+                   </div>
+                   <div class="text-sm py-1 px-2 border-b border-gray-200 flex justify-between items-center">
+                     <div class="flex items-center">
+                       <i class="fas fa-key text-yellow-500 mr-2 text-xs"></i>
+                       <span class="text-gray-700" contenteditable="true">Code</span>
+                     </div>
+                     <span class="text-blue-600 font-medium text-xs" contenteditable="true">VARCHAR</span>
+                   </div>
+                   <div class="text-sm py-1 px-2 flex justify-between">
+                     <span class="text-gray-700" contenteditable="true">Name</span>
+                     <span class="text-blue-600 font-medium text-xs" contenteditable="true">VARCHAR</span>
+                   </div>
+                 </div>
+               </div>`,
+        color: 'orange'
+    }
+};
 
-CREATE TABLE posts (
-    id INT PRIMARY KEY AUTO_INCREMENT,
-    usuario_id INT NOT NULL,
-    titulo VARCHAR(200) NOT NULL,
-    contenido TEXT NOT NULL,
-    fecha_creacion TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    fecha_actualizacion TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-    FOREIGN KEY (usuario_id) REFERENCES usuarios(id) ON DELETE CASCADE
-);
+// ===== FUNCIONES PRINCIPALES =====
 
--- Índices para mejorar el rendimiento
-CREATE INDEX idx_usuarios_email ON usuarios(email);
-CREATE INDEX idx_posts_usuario ON posts(usuario_id);
-CREATE INDEX idx_posts_fecha ON posts(fecha_creacion);`;
+<<<<<<< Updated upstream
+            // Remover selección
+            document.querySelectorAll('.nav-option').forEach(btn => {
+                btn.classList.remove('selected-option');
+=======
+function toggleSidebar() {
+    const sidebar = document.getElementById('sidebar');
+    const sidebarTexts = document.querySelectorAll('.sidebar-text');
+    const tooltips = document.querySelectorAll('.tooltip');
 
-            editor.value = sampleSQL;
-            showToast('success', 'SQL Generado', 'Se ha generado un esquema de ejemplo en el editor');
+    isSidebarCollapsed = !isSidebarCollapsed;
+
+    if (isSidebarCollapsed) {
+        sidebarTexts.forEach(text => {
+            text.style.display = 'none';
+        });
+
+        setTimeout(() => {
+            sidebar.classList.remove('sidebar-expanded');
+            sidebar.classList.add('sidebar-collapsed');
+        }, 50);
+
+        setTimeout(() => {
+            tooltips.forEach(tooltip => {
+                tooltip.style.display = 'block';
+>>>>>>> Stashed changes
+            });
+        }, 400);
+
+        if (isRightPanelOpen) {
+            closeRightPanel();
         }
+    } else {
+        sidebar.classList.remove('sidebar-collapsed');
+        sidebar.classList.add('sidebar-expanded');
 
+<<<<<<< Updated upstream
         // Event listeners
         document.getElementById('logoToggle').addEventListener('click', toggleSidebar);
-
-        // Inicializar tooltips como ocultos
-        document.querySelectorAll('.tooltip').forEach(tooltip => {
+    </script>
+=======
+        tooltips.forEach(tooltip => {
             tooltip.style.display = 'none';
         });
 
-        // Toast de bienvenida
         setTimeout(() => {
-            showToast('help', '¡Bienvenido a GraphUs!', 'Usa los botones del sidebar para utilizar lo que es GraphUs', 8000);
-        }, 1000);
-    </script>
+            sidebarTexts.forEach(text => {
+                text.style.display = 'block';
+            });
+        }, 300);
+    }
+}
+
+function selectOption(option) {
+    if (isSidebarCollapsed) {
+        toggleSidebar();
+        setTimeout(() => {
+            selectOptionInternal(option);
+        }, 400);
+    } else {
+        selectOptionInternal(option);
+    }
+}
+
+function selectOptionInternal(option) {
+    document.querySelectorAll('.nav-option').forEach(btn => {
+        btn.classList.remove('bg-white', 'shadow-md', 'border-l-4', 'border-indigo-500');
+    });
+
+    const currentBtn = document.querySelector(`[data-option="${option}"]`);
+    if (currentBtn) {
+        currentBtn.classList.add('bg-white', 'shadow-md', 'border-l-4', 'border-indigo-500');
+    }
+
+    if (currentOption === option && isRightPanelOpen && !showingEntityOptions) {
+        closeRightPanel();
+    } else {
+        openRightPanel(option);
+    }
+
+    currentOption = option;
+    showingEntityOptions = false;
+}
+
+function openRightPanel(option) {
+    const panel = document.getElementById('rightPanel');
+    const content = document.getElementById('panelContent');
+
+    panel.classList.remove('panel-collapsed');
+    panel.classList.add('panel-expanded');
+
+    if (option === 'figuras') {
+        content.innerHTML = `
+            <div class="slide-in">
+                <div class="flex items-center justify-between mb-6 pb-4 border-b border-slate-200">
+                    <h2 class="text-xl font-semibold text-slate-800">${panelContent[option].title}</h2>
+                    <button onclick="closeRightPanel()" class="p-2 hover:bg-slate-100 rounded-lg transition-colors">
+                        <i class="fas fa-times text-slate-500 hover:text-slate-700"></i>
+                    </button>
+                </div>
+                ${panelContent[option].content}
+            </div>
+        `;
+        
+        setTimeout(() => {
+            const tablaEntidad = document.getElementById('tablaEntidad');
+            if (tablaEntidad) {
+                tablaEntidad.addEventListener('click', showEntityOptions);
+            }
+
+            // Agregar event listeners a otros elementos ER
+            const relacionElement = document.getElementById('relacionElement');
+            const clavePrimariaElement = document.getElementById('clavePrimariaElement');
+            const claveForaneaElement = document.getElementById('claveForaneaElement');
+
+            if (relacionElement) {
+                relacionElement.addEventListener('click', () => {
+                    showNotification('Funcionalidad de relaciones próximamente', 'info');
+                });
+            }
+
+            if (clavePrimariaElement) {
+                clavePrimariaElement.addEventListener('click', () => {
+                    showNotification('Funcionalidad de claves primarias próximamente', 'info');
+                });
+            }
+
+            if (claveForaneaElement) {
+                claveForaneaElement.addEventListener('click', () => {
+                    showNotification('Funcionalidad de claves foráneas próximamente', 'info');
+                });
+            }
+        }, 100);
+    } else {
+        content.innerHTML = `
+            <div class="slide-in">
+                <div class="flex items-center justify-between mb-6 pb-4 border-b border-slate-200">
+                    <h2 class="text-xl font-semibold text-slate-800">${panelContent[option].title}</h2>
+                    <button onclick="closeRightPanel()" class="p-2 hover:bg-slate-100 rounded-lg transition-colors">
+                        <i class="fas fa-times text-slate-500 hover:text-slate-700"></i>
+                    </button>
+                </div>
+                ${panelContent[option].content}
+            </div>
+        `;
+    }
+
+    isRightPanelOpen = true;
+}
+
+function showEntityOptions() {
+    const content = document.getElementById('panelContent');
+    
+    content.innerHTML = `
+        <div class="slide-in">
+            <div class="flex items-center justify-between mb-6 pb-4 border-b border-slate-200">
+                <h2 class="text-xl font-semibold text-slate-800">Tipos de Entidad</h2>
+                <button onclick="closeRightPanel()" class="p-2 hover:bg-slate-100 rounded-lg transition-colors">
+                    <i class="fas fa-times text-slate-500 hover:text-slate-700"></i>
+                </button>
+            </div>
+            ${panelContent.figuras.entityOptions}
+        </div>
+    `;
+    
+    showingEntityOptions = true;
+    
+    setTimeout(() => {
+        const backButton = document.getElementById('backToMain');
+        if (backButton) {
+            backButton.addEventListener('click', () => {
+                openRightPanel('figuras');
+                showingEntityOptions = false;
+            });
+        }
+        
+        document.querySelectorAll('.entity-option').forEach(option => {
+            option.addEventListener('click', (e) => {
+                const entityType = e.currentTarget.dataset.entity;
+                addEntityToWorkspace(entityType);
+                showNotification('Entidad agregada al área de trabajo', 'success');
+            });
+        });
+    }, 100);
+}
+
+function addEntityToWorkspace(entityType) {
+    const workspace = document.getElementById('workspaceArea');
+    const welcomeMessage = document.getElementById('welcomeMessage');
+    
+    if (!workspace) {
+        console.error('No se encontró el área de trabajo');
+        return;
+    }
+    
+    if (welcomeMessage && welcomeMessage.style.display !== 'none') {
+        welcomeMessage.style.display = 'none';
+    }
+    
+    const element = document.createElement('div');
+    element.className = 'er-element absolute transition-all duration-200 hover:shadow-xl';
+    element.innerHTML = erElements[entityType].html;
+    
+    const maxX = Math.max(workspace.offsetWidth - 250, 100);
+    const maxY = Math.max(workspace.offsetHeight - 200, 100);
+    const x = Math.random() * maxX + 50;
+    const y = Math.random() * maxY + 50;
+    
+    element.style.left = x + 'px';
+    element.style.top = y + 'px';
+    element.id = `element-${entityType}-${++elementCounter}`;
+    
+    // Agregar contexto de menú (clic derecho)
+    element.addEventListener('contextmenu', (e) => {
+        e.preventDefault();
+        showContextMenu(e, element);
+    });
+
+    // Hacer doble clic para editar
+    element.addEventListener('dblclick', (e) => {
+        e.preventDefault();
+        editEntityProperties(element);
+    });
+    
+    makeDraggable(element);
+    workspace.appendChild(element);
+    
+    // Efecto de entrada
+    element.style.transform = 'scale(0.8)';
+    element.style.opacity = '0';
+    
+    setTimeout(() => {
+        element.style.transform = 'scale(1.05)';
+        element.style.opacity = '1';
+        setTimeout(() => {
+            element.style.transform = 'scale(1)';
+        }, 200);
+    }, 50);
+}
+
+function makeDraggable(element) {
+    let isDragging = false;
+    let currentX = 0;
+    let currentY = 0;
+    let initialX = 0;
+    let initialY = 0;
+    let xOffset = 0;
+    let yOffset = 0;
+
+    const dragHandle = element.querySelector('.cursor-move') || element;
+
+    dragHandle.addEventListener('mousedown', dragStart);
+    document.addEventListener('mousemove', drag);
+    document.addEventListener('mouseup', dragEnd);
+
+    function dragStart(e) {
+        // No permitir drag si se está editando texto
+        if (e.target.contentEditable === 'true') {
+            return;
+        }
+
+        initialX = e.clientX - xOffset;
+        initialY = e.clientY - yOffset;
+
+        if (e.target === dragHandle || dragHandle.contains(e.target)) {
+            isDragging = true;
+            element.classList.add('dragging', 'z-50');
+            element.style.cursor = 'grabbing';
+        }
+    }
+
+    function drag(e) {
+        if (isDragging) {
+            e.preventDefault();
+            
+            currentX = e.clientX - initialX;
+            currentY = e.clientY - initialY;
+
+            xOffset = currentX;
+            yOffset = currentY;
+
+            // Limitar el drag dentro del workspace
+            const workspace = document.getElementById('workspaceArea');
+            if (workspace) {
+                const rect = workspace.getBoundingClientRect();
+                const maxX = workspace.offsetWidth - element.offsetWidth;
+                const maxY = workspace.offsetHeight - element.offsetHeight;
+                
+                currentX = Math.max(0, Math.min(currentX, maxX));
+                currentY = Math.max(0, Math.min(currentY, maxY));
+            }
+
+            setTranslate(currentX, currentY, element);
+        }
+    }
+
+    function dragEnd(e) {
+        if (isDragging) {
+            initialX = currentX;
+            initialY = currentY;
+
+            isDragging = false;
+            element.classList.remove('dragging', 'z-50');
+            element.style.cursor = 'default';
+        }
+    }
+
+    function setTranslate(xPos, yPos, el) {
+        el.style.left = xPos + 'px';
+        el.style.top = yPos + 'px';
+    }
+}
+
+function closeRightPanel() {
+    const panel = document.getElementById('rightPanel');
+    panel.classList.remove('panel-expanded');
+    panel.classList.add('panel-collapsed');
+
+    document.querySelectorAll('.nav-option').forEach(btn => {
+        btn.classList.remove('bg-white', 'shadow-md', 'border-l-4', 'border-indigo-500');
+    });
+
+    isRightPanelOpen = false;
+    currentOption = null;
+    showingEntityOptions = false;
+}
+
+// ===== FUNCIONES AUXILIARES =====
+
+function showNotification(message, type = 'info') {
+    const notification = document.createElement('div');
+    notification.className = `fixed top-4 right-4 z-50 px-4 py-3 rounded-lg shadow-lg transition-all duration-300 transform translate-x-full`;
+    
+    const colors = {
+        success: 'bg-green-500 text-white',
+        error: 'bg-red-500 text-white',
+        warning: 'bg-yellow-500 text-white',
+        info: 'bg-blue-500 text-white'
+    };
+    
+    const icons = {
+        success: 'fas fa-check-circle',
+        error: 'fas fa-exclamation-circle',
+        warning: 'fas fa-exclamation-triangle',
+        info: 'fas fa-info-circle'
+    };
+    
+    notification.className += ' ' + colors[type];
+    notification.innerHTML = `
+        <div class="flex items-center space-x-2">
+            <i class="${icons[type]}"></i>
+            <span>${message}</span>
+        </div>
+    `;
+    
+    document.body.appendChild(notification);
+    
+    setTimeout(() => {
+        notification.classList.remove('translate-x-full');
+    }, 100);
+    
+    setTimeout(() => {
+        notification.classList.add('translate-x-full');
+        setTimeout(() => {
+            document.body.removeChild(notification);
+        }, 300);
+    }, 3000);
+}
+
+function showContextMenu(e, element) {
+    // Remover menús existentes
+    const existingMenu = document.querySelector('.context-menu');
+    if (existingMenu) {
+        existingMenu.remove();
+    }
+
+    const menu = document.createElement('div');
+    menu.className = 'context-menu fixed bg-white shadow-lg border rounded-lg py-2 z-50';
+    menu.style.left = e.pageX + 'px';
+    menu.style.top = e.pageY + 'px';
+
+    menu.innerHTML = `
+        <button class="context-option w-full px-4 py-2 text-left hover:bg-gray-100 text-sm" data-action="edit">
+            <i class="fas fa-edit mr-2"></i>Editar
+        </button>
+        <button class="context-option w-full px-4 py-2 text-left hover:bg-gray-100 text-sm" data-action="duplicate">
+            <i class="fas fa-copy mr-2"></i>Duplicar
+        </button>
+        <div class="border-t my-1"></div>
+        <button class="context-option w-full px-4 py-2 text-left hover:bg-red-50 text-red-600 text-sm" data-action="delete">
+            <i class="fas fa-trash mr-2"></i>Eliminar
+        </button>
+    `;
+
+    document.body.appendChild(menu);
+
+    // Event listeners para las opciones del menú
+    menu.querySelectorAll('.context-option').forEach(option => {
+        option.addEventListener('click', () => {
+            const action = option.dataset.action;
+            handleContextAction(action, element);
+            menu.remove();
+        });
+    });
+
+    // Cerrar menú al hacer clic fuera
+    setTimeout(() => {
+        document.addEventListener('click', () => {
+            menu.remove();
+        }, { once: true });
+    }, 100);
+}
+
+function handleContextAction(action, element) {
+    switch (action) {
+        case 'edit':
+            editEntityProperties(element);
+            break;
+        case 'duplicate':
+            duplicateEntity(element);
+            break;
+        case 'delete':
+            deleteEntity(element);
+            break;
+    }
+}
+
+function editEntityProperties(element) {
+    // Implementar editor de propiedades
+    showNotification('Editor de propiedades próximamente', 'info');
+}
+
+function duplicateEntity(element) {
+    const clone = element.cloneNode(true);
+    clone.id = `element-duplicate-${++elementCounter}`;
+    
+    // Desplazar la posición
+    const currentLeft = parseInt(element.style.left);
+    const currentTop = parseInt(element.style.top);
+    clone.style.left = (currentLeft + 20) + 'px';
+    clone.style.top = (currentTop + 20) + 'px';
+    
+    makeDraggable(clone);
+    
+    // Agregar event listeners
+    clone.addEventListener('contextmenu', (e) => {
+        e.preventDefault();
+        showContextMenu(e, clone);
+    });
+
+    clone.addEventListener('dblclick', (e) => {
+        e.preventDefault();
+        editEntityProperties(clone);
+    });
+    
+    element.parentNode.appendChild(clone);
+    showNotification('Entidad duplicada', 'success');
+}
+
+function deleteEntity(element) {
+    if (confirm('¿Estás seguro de que quieres eliminar esta entidad?')) {
+        element.style.transform = 'scale(0)';
+        element.style.opacity = '0';
+        
+        setTimeout(() => {
+            element.remove();
+            showNotification('Entidad eliminada', 'success');
+        }, 300);
+    }
+}
+
+// ===== FUNCIONES SQL =====
+
+let isExpanded = false;
+let originalHeight = '16rem';
+
+function generateSQL() {
+    const workspace = document.getElementById('workspaceArea');
+    const entities = workspace.querySelectorAll('.er-element');
+    const editor = document.getElementById('sqlEditor');
+    
+    if (entities.length === 0) {
+        showNotification('No hay entidades para generar SQL', 'warning');
+        return;
+    }
+    
+    let sql = '-- Script SQL generado automáticamente\n';
+    sql += '-- Fecha: ' + new Date().toLocaleString() + '\n\n';
+    
+    entities.forEach((entity, index) => {
+        const entityName = entity.querySelector('.entity-name')?.textContent || `Entity_${index + 1}`;
+        const fields = entity.querySelectorAll('[contenteditable="true"]');
+        
+        sql += `CREATE TABLE ${entityName.toLowerCase()} (\n`;
+        
+        let fieldLines = [];
+        fields.forEach(field => {
+            if (field.classList.contains('entity-name')) return;
+            
+            const fieldName = field.textContent.trim();
+            const hasKey = field.querySelector('.fa-key');
+            const typeElement = field.querySelector('.text-blue-600');
+            const type = typeElement ? typeElement.textContent : 'VARCHAR(255)';
+            
+            let line = `    ${fieldName.toLowerCase()} ${type}`;
+            if (hasKey) {
+                line += ' PRIMARY KEY';
+                if (type.includes('INT')) {
+                    line += ' AUTO_INCREMENT';
+                }
+            }
+            fieldLines.push(line);
+        });
+        
+        sql += fieldLines.join(',\n') + '\n';
+        sql += ');\n\n';
+    });
+    
+    editor.value = sql;
+    showNotification('Código SQL generado exitosamente', 'success');
+}
+
+function expandSQLEditor() {
+    const editor = document.getElementById('sqlEditor');
+    const icon = document.getElementById('expandIcon');
+    const text = document.getElementById('expandText');
+
+    if (!isExpanded) {
+        editor.style.height = '32rem';
+        icon.className = 'fas fa-compress-alt mr-1';
+        text.textContent = 'Contraer';
+        isExpanded = true;
+    } else {
+        editor.style.height = originalHeight;
+        icon.className = 'fas fa-expand-alt mr-1';
+        text.textContent = 'Expandir';
+        isExpanded = false;
+    }
+}
+
+function clearSQL() {
+    const editor = document.getElementById('sqlEditor');
+    if (editor.value.trim() !== '') {
+        if (confirm('¿Estás seguro de que quieres limpiar todo el código SQL?')) {
+            editor.value = '';
+            editor.focus();
+        }
+    }
+}
+
+function copySQL() {
+    const editor = document.getElementById('sqlEditor');
+    if (editor.value.trim() === '') {
+        showNotification('No hay código SQL para copiar', 'warning');
+        return;
+    }
+
+    navigator.clipboard.writeText(editor.value).then(() => {
+        const button = event.target.closest('button');
+        const icon = button.querySelector('i');
+        const originalClass = icon.className;
+
+        icon.className = 'fas fa-check';
+        button.classList.add('bg-emerald-100', 'border-emerald-400');
+
+        setTimeout(() => {
+            icon.className = originalClass;
+            button.classList.remove('bg-emerald-100', 'border-emerald-400');
+        }, 2000);
+        
+        showNotification('Código copiado al portapapeles', 'success');
+    }).catch(() => {
+        showNotification('Error al copiar el código', 'error');
+    });
+}
+
+function downloadSQL() {
+    const editor = document.getElementById('sqlEditor');
+    if (editor.value.trim() === '') {
+        showNotification('No hay código SQL para descargar', 'warning');
+        return;
+    }
+
+    const blob = new Blob([editor.value], { type: 'text/plain' });
+    const url = window.URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = 'schema_' + new Date().toISOString().split('T')[0] + '.sql';
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    window.URL.revokeObjectURL(url);
+    
+    showNotification('Archivo SQL descargado', 'success');
+}
+
+// ===== EVENT LISTENERS =====
+
+document.addEventListener('DOMContentLoaded', function() {
+    const logoToggle = document.getElementById('logoToggle');
+    if (logoToggle) {
+        logoToggle.addEventListener('click', toggleSidebar);
+    }
+
+    // Inicializar tooltips como ocultos
+    document.querySelectorAll('.tooltip').forEach(tooltip => {
+        tooltip.style.display = 'none';
+    });
+
+    // Prevenir selección de texto en elementos draggables
+    document.addEventListener('selectstart', function(e) {
+        if (e.target.closest('.er-element')) {
+            e.preventDefault();
+        }
+    });
+
+    // Cerrar menú contextual con Escape
+    document.addEventListener('keydown', function(e) {
+        if (e.key === 'Escape') {
+            const contextMenu = document.querySelector('.context-menu');
+            if (contextMenu) {
+                contextMenu.remove();
+            }
+        }
+    });
+});
+
+// Exportar funciones para uso global
+window.toggleSidebar = toggleSidebar;
+window.selectOption = selectOption;
+window.closeRightPanel = closeRightPanel;
+window.expandSQLEditor = expandSQLEditor;
+window.clearSQL = clearSQL;
+window.copySQL = copySQL;
+window.downloadSQL = downloadSQL;
+window.generateSQL = generateSQL;
+</script>
+<script>
+// ===== SCRIPT COMPLEMENTARIO PARA EL GRID Y ENTIDADES =====
+
+// Crear el área de trabajo con cuadricula en la parte derecha
+function createWorkspaceArea() {
+    let workspace = document.getElementById("workspaceArea");
+    
+    if (!workspace) {
+        workspace = document.createElement("div");
+        workspace.id = "workspaceArea";
+        workspace.style.position = "relative";
+        workspace.style.width = "100%";
+        workspace.style.height = "100%";
+        workspace.style.backgroundSize = "20px 20px";
+        workspace.style.backgroundImage =
+            "linear-gradient(to right, #e5e7eb 1px, transparent 1px), " +
+            "linear-gradient(to bottom, #e5e7eb 1px, transparent 1px)";
+        workspace.style.overflow = "hidden";
+        workspace.classList.add("rounded-lg", "shadow-inner");
+
+        // Insertar dentro del contenedor de la derecha
+        const container = document.getElementById("workspaceContainer");
+        container.appendChild(workspace);
+
+        // Mensaje inicial
+        const welcome = document.createElement("div");
+        welcome.id = "welcomeMessage";
+        welcome.className = "absolute inset-0 flex items-center justify-center text-gray-400 text-lg";
+        welcome.innerText = "Haz clic en un tipo de identidad para comenzar tu diagrama ER";
+        workspace.appendChild(welcome);
+    }
+}
+
+// Ejecutar cuando el DOM esté listo
+document.addEventListener("DOMContentLoaded", () => {
+    document.addEventListener("click", (e) => {
+        const option = e.target.closest(".entity-option");
+        if (option) {
+            const entityType = option.dataset.entity;
+
+            // Crear workspace si no existe
+            createWorkspaceArea();
+
+            // ⚠️ Llamar a la función principal SOLO si existe
+            if (typeof addEntityToWorkspace === "function") {
+                addEntityToWorkspace(entityType);
+            } else {
+                console.error("❌ Error: la función addEntityToWorkspace no está definida todavía.");
+            }
+        }
+    });
+});
+</script>
+<script>
+// ===== Crear área de trabajo con cuadrícula =====
+function createWorkspaceArea() {
+    let workspace = document.getElementById("workspaceArea");
+
+    if (!workspace) {
+        const mainArea = document.querySelector(".relative.z-10.h-full.flex.items-center.justify-center.-mt-16");
+        if (mainArea) {
+            mainArea.innerHTML = ""; // borrar bienvenida
+
+            workspace = document.createElement("div");
+            workspace.id = "workspaceArea";
+            workspace.style.position = "relative";
+            workspace.style.width = "100%";
+            workspace.style.height = "100%";
+            workspace.style.backgroundSize = "20px 20px";
+            workspace.style.backgroundImage =
+                "linear-gradient(to right, #e5e7eb 1px, transparent 1px), " +
+                "linear-gradient(to bottom, #e5e7eb 1px, transparent 1px)";
+            workspace.style.overflow = "hidden";
+            workspace.classList.add("rounded-lg", "shadow-inner", "bg-white");
+
+            mainArea.appendChild(workspace);
+        }
+    }
+    return workspace;
+}
+
+// ===== Hacer entidades arrastrables =====
+function makeEntityDraggable(entity) {
+    let offsetX = 0, offsetY = 0, isDragging = false;
+
+    entity.addEventListener("mousedown", (e) => {
+        isDragging = true;
+        entity.classList.add("selected-entity");
+        offsetX = e.clientX - entity.offsetLeft;
+        offsetY = e.clientY - entity.offsetTop;
+        entity.style.zIndex = "1000";
+    });
+
+    document.addEventListener("mousemove", (e) => {
+        if (isDragging) {
+            entity.style.position = "absolute";
+            entity.style.left = (e.clientX - offsetX) + "px";
+            entity.style.top = (e.clientY - offsetY) + "px";
+        }
+    });
+
+    document.addEventListener("mouseup", () => {
+        isDragging = false;
+        entity.style.zIndex = "1";
+    });
+
+    document.addEventListener("click", (e) => {
+        if (!entity.contains(e.target)) {
+            entity.classList.remove("selected-entity");
+        }
+    });
+}
+
+// ===== Eliminar con tecla Delete =====
+document.addEventListener("keydown", (e) => {
+    if (e.key === "Delete" || e.key === "Backspace") {
+        const selected = document.querySelector(".selected-entity");
+        if (selected) selected.remove();
+    }
+});
+
+// ===== Crear entidades según el tipo seleccionado =====
+function addEntityToWorkspace(type) {
+    const entity = document.createElement("div");
+    entity.className = "er-element bg-white border border-gray-300 rounded-lg shadow-md p-3";
+    entity.style.left = "50px";
+    entity.style.top = "50px";
+    entity.style.minWidth = "220px";
+
+    // Encabezado
+    const header = document.createElement("div");
+    header.className = "font-bold text-indigo-600 mb-2 text-sm";
+    header.innerText = type;
+    entity.appendChild(header);
+
+    // Cuerpo (tabla)
+    const table = document.createElement("table");
+    table.className = "w-full text-xs border border-gray-300";
+
+    if (type === "Entidad Simple") {
+        table.innerHTML = `
+            <tr><td class="border px-2 py-1">Nombre de la tabla</td></tr>
+            <tr><td class="border px-2 py-1">Nombre del campo</td></tr>
+        `;
+    }
+
+    if (type === "Entidad con Llaves") {
+        table.innerHTML = `
+            <tr><td class="border px-2 py-1">Nombre de la tabla</td></tr>
+            <tr><td class="border px-2 py-1">Nombre de la llave</td></tr>
+            <tr><td class="border px-2 py-1">Nombre del campo</td></tr>
+        `;
+    }
+
+    if (type === "Entidad con Tipos") {
+        table.innerHTML = `
+            <tr><td class="border px-2 py-1">Nombre de la tabla</td></tr>
+            <tr><td class="border px-2 py-1">Nombre de la llave</td></tr>
+            <tr><td class="border px-2 py-1">Nombre del campo / Tipo de dato</td></tr>
+        `;
+    }
+
+    if (type === "Entidad Completa") {
+        table.innerHTML = `
+            <tr><td class="border px-2 py-1">Nombre de la tabla</td></tr>
+            <tr><td class="border px-2 py-1">Nombre de la llave</td></tr>
+            <tr><td class="border px-2 py-1">Nombre del campo</td></tr>
+            <tr><td class="border px-2 py-1">Nombre del campo / Tipo de dato</td></tr>
+        `;
+    }
+
+    entity.appendChild(table);
+
+    return entity;
+}
+
+// ===== Escuchar clics del menú =====
+document.addEventListener("DOMContentLoaded", () => {
+    document.addEventListener("click", (e) => {
+        const option = e.target.closest(".entity-option");
+        if (option) {
+            const entityType = option.dataset.entity;
+
+            const workspace = createWorkspaceArea();
+            const newEntity = addEntityToWorkspace(entityType);
+            if (newEntity) {
+                workspace.appendChild(newEntity);
+                makeEntityDraggable(newEntity);
+            }
+        }
+    });
+});
+</script>
+
 </body>
 
 </html>
