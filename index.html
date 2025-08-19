@@ -7,9 +7,11 @@
     <title>GraphUs - Professional Navbar</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <link rel="stylesheet" href="index.css">
-
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Varela+Round:wght@400&display=swap" rel="stylesheet">
     <style>
+        /* Estilos originales del sidebar */
         .sidebar-collapsed {
             width: 5rem;
         }
@@ -74,7 +76,6 @@
 
         .nav-icon-container {
             min-width: 2.25rem;
-            /* w-9 equivalent */
             transition: all 0.3s ease;
         }
 
@@ -122,28 +123,220 @@
             box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
             border-left: 4px solid #6366f1;
         }
-        .er-element {
-            position: absolute;
-            cursor: move;
-            user-select: none;
-            z-index: 10;
+
+        /* Sistema de Toasts */
+        :root {
+            --toast-help-primary: #05478a;
+            --toast-help-secondary: #0070e0;
+            --toast-success-primary: #005e38;
+            --toast-success-secondary: #03a65a;
+            --toast-warning-primary: #c24914;
+            --toast-warning-secondary: #fc8621;
+            --toast-error-primary: #851d41;
+            --toast-error-secondary: #db3056;
         }
 
-        .er-element:hover {
-            transform: scale(1.02);
-            box-shadow: 0 8px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
-        }
-
-        .dragging {
-            transform: rotate(5deg) scale(1.1);
-            opacity: 0.8;
+        .toast-container {
+            position: fixed;
+            top: 20px;
+            right: 20px;
             z-index: 1000;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            max-width: 400px;
+        }
+
+        .toast-item {
+            overflow: hidden;
+            max-height: 0;
+            opacity: 0;
+            transition: all 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+            transform: translateX(100%);
+            margin-bottom: 0;
+        }
+
+        .toast-item.show {
+            max-height: 200px;
+            opacity: 1;
+            transform: translateX(0);
+            margin-bottom: 10px;
+        }
+
+        .toast-item.removing {
+            max-height: 0;
+            opacity: 0;
+            transform: translateX(100%);
+            margin-bottom: 0;
+        }
+
+        .toast {
+            background: var(--toast-bg);
+            color: #f5f5f5;
+            padding: 1rem 2rem 1rem 6rem;
+            border-radius: 20px;
+            position: relative;
+            font-family: "Varela Round", sans-serif;
+            font-weight: 400;
+            text-align: left;
+            min-width: 280px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        /* Decoración de gotas animada */
+        .toast::before {
+            content: "";
+            position: absolute;
+            width: 5.5rem;
+            height: 6rem;
+            background: 
+                radial-gradient(circle at 22% 3.8rem, var(--toast-primary) 0.75rem, transparent calc(0.75rem + 1px)),
+                radial-gradient(circle at 95% 1.9rem, var(--toast-primary) 0.07rem, transparent calc(0.07rem + 1px)),
+                radial-gradient(circle at 80% 2.25rem, var(--toast-primary) 0.18rem, transparent calc(0.18rem + 1px)),
+                radial-gradient(circle at 80% 75%, var(--toast-primary) 0.35rem, transparent calc(0.35rem + 1px)),
+                radial-gradient(circle at 43% 2.3rem, var(--toast-primary) 0.07rem, transparent calc(0.07rem + 1px)),
+                radial-gradient(circle at 40% 1rem, var(--toast-primary) 0.12rem, transparent calc(0.12rem + 1px)),
+                radial-gradient(circle at 20% 1.5rem, var(--toast-primary) 0.25rem, transparent calc(0.25rem + 1px)),
+                radial-gradient(circle at 64% 51%, var(--toast-primary) 0.45rem, transparent calc(0.45rem + 1px)),
+                radial-gradient(circle at 0% 120%, var(--toast-primary) 4rem, transparent calc(4rem + 1px));
+            background-repeat: no-repeat;
+            bottom: 0;
+            left: 0;
+            border-radius: 0 0 0 20px;
+            opacity: 0.6;
+        }
+
+        /* Icono circular */
+        .toast::after {
+            content: var(--toast-icon);
+            position: absolute;
+            width: 3.5rem;
+            height: 3.5rem;
+            background: var(--toast-primary);
+            top: -1.75rem;
+            left: 2rem;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.8rem;
+            color: white;
+            font-weight: bold;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+            border: 3px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .toast h3 {
+            font-size: 1.2rem;
+            margin: 0 0 0.5rem 0;
+            font-weight: 600;
+            position: relative;
+            color: #ffffff;
+        }
+
+        .toast p {
+            font-size: 0.95rem;
+            margin: 0;
+            line-height: 1.4;
+            color: rgba(255, 255, 255, 0.9);
+        }
+
+        .toast-close {
+            position: absolute;
+            top: 1rem;
+            right: 1rem;
+            width: 1.5rem;
+            height: 1.5rem;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.2);
+            border: none;
+            color: white;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.2rem;
+            transition: all 0.3s ease;
+            backdrop-filter: blur(5px);
+        }
+
+        .toast-close:hover {
+            background: rgba(255, 255, 255, 0.3);
+            transform: scale(1.1);
+        }
+
+        /* Tipos de toast */
+        .toast.help {
+            --toast-primary: var(--toast-help-primary);
+            --toast-bg: var(--toast-help-secondary);
+            --toast-icon: "?";
+        }
+
+        .toast.success {
+            --toast-primary: var(--toast-success-primary);
+            --toast-bg: var(--toast-success-secondary);
+            --toast-icon: "✓";
+        }
+
+        .toast.warning {
+            --toast-primary: var(--toast-warning-primary);
+            --toast-bg: var(--toast-warning-secondary);
+            --toast-icon: "!";
+        }
+
+        .toast.error {
+            --toast-primary: var(--toast-error-primary);
+            --toast-bg: var(--toast-error-secondary);
+            --toast-icon: "×";
+        }
+
+        /* Ajuste específico para el ícono de éxito */
+        .toast.success::after {
+            font-size: 1.4rem;
+        }
+
+        /* Animación de entrada suave */
+        @keyframes toastSlideIn {
+            from {
+                transform: translateX(100%) rotateZ(5deg);
+                opacity: 0;
+            }
+            to {
+                transform: translateX(0) rotateZ(0deg);
+                opacity: 1;
+            }
+        }
+
+        .toast-item.show {
+            animation: toastSlideIn 0.5s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+        }
+
+        /* Efecto hover en el toast */
+        .toast:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.4);
+        }
+
+        /* Barra de progreso para auto-close */
+        .toast-progress {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            height: 3px;
+            background: rgba(255, 255, 255, 0.3);
+            border-radius: 0 0 20px 20px;
+            transform-origin: left;
+            transition: transform linear;
         }
     </style>
->>>>>>> Stashed changes
 </head>
 
 <body class="bg-gray-50 min-h-screen">
+    <!-- Contenedor de Toasts -->
+    <div id="toast-container" class="toast-container"></div>
+
     <div class="flex">
         <!-- Sidebar Principal -->
         <div id="sidebar"
@@ -156,26 +349,14 @@
                         class="w-8 h-8 bg-gradient-to-br from-indigo-500 to-purple-600 rounded-lg flex items-center justify-center shadow-md hover:shadow-lg transition-shadow flex-shrink-0">
                         <i class="fas fa-project-diagram text-white text-sm"></i>
                     </div>
-                    <h1 class="nav-text text-xl font-semibold text-slate-700">GraphUs</h1>
+                    <h1 class="nav-text text-xl font-semibold text-slate-700 sidebar-text">GraphUs</h1>
                 </button>
             </div>
 
             <!-- Navigation Options -->
             <div class="p-3 space-y-2">
                 <!-- Figuras -->
-<<<<<<< Updated upstream
-                <button
-                    class="nav-option w-full flex items-center p-3 rounded-xl hover:bg-white/70 hover:shadow-sm transition-all duration-200 text-left group"
-                    data-option="figuras" onclick="selectOption('figuras')">
-                    <div
-                        class="nav-icon-container w-9 h-9 bg-gradient-to-br from-blue-500 to-cyan-600 rounded-lg flex items-center justify-center mr-3 flex-shrink-0 shadow-sm group-hover:shadow-md transition-shadow">
-                        <i class="fas fa-shapes text-white text-sm"></i>
-                    </div>
-                    <span class="nav-text text-sm font-medium text-slate-700">Figuras</span>
-                    <div class="tooltip">Figuras</div>
-                </button>
-=======
-               <div class="nav-option-container">
+                <div class="nav-option-container">
                     <button
                         class="nav-option w-full flex items-center p-3 rounded-xl hover:bg-white/70 hover:shadow-sm transition-all duration-200 text-left group relative"
                         data-option="figuras" onclick="selectOption('figuras')">
@@ -187,44 +368,48 @@
                         <div class="tooltip sidebar-collapsed-only">Figuras</div>
                     </button>
                 </div>
-                
->>>>>>> Stashed changes
 
                 <!-- Código -->
-                <button
-                    class="nav-option w-full flex items-center p-3 rounded-xl hover:bg-white/70 hover:shadow-sm transition-all duration-200 text-left group"
-                    data-option="codigo" onclick="selectOption('codigo')">
-                    <div
-                        class="nav-icon-container w-9 h-9 bg-gradient-to-br from-emerald-500 to-teal-600 rounded-lg flex items-center justify-center mr-3 flex-shrink-0 shadow-sm group-hover:shadow-md transition-shadow">
-                        <i class="fas fa-code text-white text-sm"></i>
-                    </div>
-                    <span class="nav-text text-sm font-medium text-slate-700">Código</span>
-                    <div class="tooltip">Código</div>
-                </button>
+                <div class="nav-option-container">
+                    <button
+                        class="nav-option w-full flex items-center p-3 rounded-xl hover:bg-white/70 hover:shadow-sm transition-all duration-200 text-left group relative"
+                        data-option="codigo" onclick="selectOption('codigo')">
+                        <div
+                            class="w-9 h-9 bg-gradient-to-br from-emerald-500 to-teal-600 rounded-lg flex items-center justify-center mr-3 flex-shrink-0 shadow-sm group-hover:shadow-md transition-shadow">
+                            <i class="fas fa-code text-white text-sm"></i>
+                        </div>
+                        <span class="nav-text text-sm font-medium text-slate-700 sidebar-text">Código</span>
+                        <div class="tooltip sidebar-collapsed-only">Código</div>
+                    </button>
+                </div>
 
                 <!-- Importar -->
-                <button
-                    class="nav-option w-full flex items-center p-3 rounded-xl hover:bg-white/70 hover:shadow-sm transition-all duration-200 text-left group"
-                    data-option="importar" onclick="selectOption('importar')">
-                    <div
-                        class="nav-icon-container w-9 h-9 bg-gradient-to-br from-violet-500 to-purple-600 rounded-lg flex items-center justify-center mr-3 flex-shrink-0 shadow-sm group-hover:shadow-md transition-shadow">
-                        <i class="fas fa-download text-white text-sm"></i>
-                    </div>
-                    <span class="nav-text text-sm font-medium text-slate-700">Importar</span>
-                    <div class="tooltip">Importar</div>
-                </button>
+                <div class="nav-option-container">
+                    <button
+                        class="nav-option w-full flex items-center p-3 rounded-xl hover:bg-white/70 hover:shadow-sm transition-all duration-200 text-left group relative"
+                        data-option="importar" onclick="selectOption('importar')">
+                        <div
+                            class="w-9 h-9 bg-gradient-to-br from-violet-500 to-purple-600 rounded-lg flex items-center justify-center mr-3 flex-shrink-0 shadow-sm group-hover:shadow-md transition-shadow">
+                            <i class="fas fa-download text-white text-sm"></i>
+                        </div>
+                        <span class="nav-text text-sm font-medium text-slate-700 sidebar-text">Importar</span>
+                        <div class="tooltip sidebar-collapsed-only">Importar</div>
+                    </button>
+                </div>
 
                 <!-- Exportar -->
-                <button
-                    class="nav-option w-full flex items-center p-3 rounded-xl hover:bg-white/70 hover:shadow-sm transition-all duration-200 text-left group"
-                    data-option="exportar" onclick="selectOption('exportar')">
-                    <div
-                        class="nav-icon-container w-9 h-9 bg-gradient-to-br from-orange-500 to-amber-600 rounded-lg flex items-center justify-center mr-3 flex-shrink-0 shadow-sm group-hover:shadow-md transition-shadow">
-                        <i class="fas fa-upload text-white text-sm"></i>
-                    </div>
-                    <span class="nav-text text-sm font-medium text-slate-700">Exportar</span>
-                    <div class="tooltip">Exportar</div>
-                </button>
+                <div class="nav-option-container">
+                    <button
+                        class="nav-option w-full flex items-center p-3 rounded-xl hover:bg-white/70 hover:shadow-sm transition-all duration-200 text-left group relative"
+                        data-option="exportar" onclick="selectOption('exportar')">
+                        <div
+                            class="w-9 h-9 bg-gradient-to-br from-orange-500 to-amber-600 rounded-lg flex items-center justify-center mr-3 flex-shrink-0 shadow-sm group-hover:shadow-md transition-shadow">
+                            <i class="fas fa-upload text-white text-sm"></i>
+                        </div>
+                        <span class="nav-text text-sm font-medium text-slate-700 sidebar-text">Exportar</span>
+                        <div class="tooltip sidebar-collapsed-only">Exportar</div>
+                    </button>
+                </div>
             </div>
         </div>
 
@@ -237,17 +422,93 @@
         </div>
 
         <!-- Área Principal -->
-        <div class="flex-1 bg-gray-50">
-            <div class="p-8">
-                <div class="text-center text-gray-500">
-                    <i class="fas fa-mouse-pointer text-4xl mb-4"></i>
-                    <p class="text-lg">Selecciona una opción del navbar para ver sus herramientas</p>
+        <div class="flex-1 bg-gray-50 relative overflow-hidden">
+            <!-- Cuadrícula de fondo -->
+            <div class="absolute inset-0 opacity-30">
+                <svg width="100%" height="100%" xmlns="http://www.w3.org/2000/svg">
+                    <defs>
+                        <pattern id="grid" width="20" height="20" patternUnits="userSpaceOnUse">
+                            <path d="M 20 0 L 0 0 0 20" fill="none" stroke="#cbd5e1" stroke-width="0.5" />
+                        </pattern>
+                        <pattern id="gridBold" width="100" height="100" patternUnits="userSpaceOnUse">
+                            <path d="M 100 0 L 0 0 0 100" fill="none" stroke="#94a3b8" stroke-width="1" />
+                        </pattern>
+                    </defs>
+                    <rect width="100%" height="100%" fill="url(#grid)" />
+                    <rect width="100%" height="100%" fill="url(#gridBold)" />
+                </svg>
+            </div>
+
+            <!-- Contenido centrado -->
+            <div class="relative z-10 h-full flex items-center justify-center -mt-16">
+                <div class="text-center">
+                    <!-- Icono principal con animación sutil -->
+                    <div class="mb-6 relative">
+                        <div
+                            class="w-24 h-24 mx-auto bg-gradient-to-br from-indigo-500/20 to-purple-600/20 rounded-2xl flex items-center justify-center backdrop-blur-sm border border-white/30 shadow-lg">
+                            <i class="fas fa-project-diagram text-4xl text-indigo-600 animate-pulse"></i>
+                        </div>
+                        <!-- Círculos decorativos -->
+                        <div class="absolute -top-2 -right-2 w-6 h-6 bg-gradient-to-br from-cyan-400 to-blue-500 rounded-full animate-bounce"
+                            style="animation-delay: 0.5s;"></div>
+                        <div class="absolute -bottom-2 -left-2 w-4 h-4 bg-gradient-to-br from-purple-400 to-pink-500 rounded-full animate-bounce"
+                            style="animation-delay: 1s;"></div>
+                    </div>
+
+                    <!-- Texto principal -->
+                    <h2 class="text-2xl font-bold text-slate-800 mb-3">
+                        Área de Trabajo
+                    </h2>
+                    <p class="text-lg text-slate-600 mb-6 max-w-md">
+                        Selecciona una opción del navbar para comenzar a crear tu diagrama
+                    </p>
+
+                    <!-- Indicadores de funcionalidad -->
+                    <div class="flex flex-wrap justify-center gap-4 max-w-lg mx-auto">
+                        <div
+                            class="flex items-center space-x-2 bg-white/80 backdrop-blur-sm px-4 py-2 rounded-full shadow-sm border border-white/50">
+                            <div class="w-3 h-3 bg-blue-500 rounded-full animate-pulse"></div>
+                            <span class="text-sm text-slate-700 font-medium">Arrastra y suelta</span>
+                        </div>
+                        <div
+                            class="flex items-center space-x-2 bg-white/80 backdrop-blur-sm px-4 py-2 rounded-full shadow-sm border border-white/50">
+                            <div class="w-3 h-3 bg-emerald-500 rounded-full animate-pulse"
+                                style="animation-delay: 0.3s;"></div>
+                            <span class="text-sm text-slate-700 font-medium">Cuadrícula inteligente</span>
+                        </div>
+                        <div
+                            class="flex items-center space-x-2 bg-white/80 backdrop-blur-sm px-4 py-2 rounded-full shadow-sm border border-white/50">
+                            <div class="w-3 h-3 bg-purple-500 rounded-full animate-pulse"
+                                style="animation-delay: 0.6s;"></div>
+                            <span class="text-sm text-slate-700 font-medium">Conexiones automáticas</span>
+                        </div>
+                    </div>
+
+                    <!-- Botón de acción sugerido -->
+                    <div class="mt-8">
+                        <button onclick="selectOption('figuras')"
+                            class="inline-flex items-center space-x-2 bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 text-white px-6 py-3 rounded-xl font-semibold shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-200">
+                            <i class="fas fa-shapes"></i>
+                            <span>Comenzar con Figuras</span>
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Indicador de zoom en la esquina -->
+            <div
+                class="absolute bottom-6 right-6 bg-white/90 backdrop-blur-sm px-3 py-2 rounded-lg shadow-sm border border-white/50">
+                <div class="flex items-center space-x-2 text-sm text-slate-600">
+                    <i class="fas fa-search-plus text-xs"></i>
+                    <span class="font-medium">100%</span>
+                    <div class="w-px h-4 bg-slate-300"></div>
+                    <button class="hover:text-slate-800 transition-colors" title="Ajustar al contenido">
+                        <i class="fas fa-expand-arrows-alt text-xs"></i>
+                    </button>
                 </div>
             </div>
         </div>
     </div>
-
-    
 
 <script>
     let currentOption = null;
@@ -276,222 +537,6 @@ const panelContent = {
                             </div>
                         </div>
                     </div>
-<<<<<<< Updated upstream
-                `
-            },
-            codigo: {
-                title: 'Editor de Código',
-                content: `
-                    <div class="space-y-4">
-                        <h3 class="text-lg font-semibold text-gray-800 mb-4">Herramientas de Código</h3>
-                        
-                        <div class="space-y-3">
-                            <div class="p-3 border border-gray-200 rounded-lg hover:shadow-sm transition-shadow cursor-pointer">
-                                <div class="flex items-center space-x-3">
-                                    <div class="w-8 h-8 bg-blue-100 rounded flex items-center justify-center">
-                                        <i class="fas fa-database text-blue-600 text-sm"></i>
-                                    </div>
-                                    <div>
-                                        <div class="font-medium text-gray-800">SQL Generator</div>
-                                        <div class="text-sm text-gray-500">Genera código SQL desde el diagrama</div>
-                                    </div>
-                                </div>
-                            </div>
-                            
-                            <div class="p-3 border border-gray-200 rounded-lg hover:shadow-sm transition-shadow cursor-pointer">
-                                <div class="flex items-center space-x-3">
-                                    <div class="w-8 h-8 bg-green-100 rounded flex items-center justify-center">
-                                        <i class="fab fa-js text-green-600 text-sm"></i>
-                                    </div>
-                                    <div>
-                                        <div class="font-medium text-gray-800">JavaScript Models</div>
-                                        <div class="text-sm text-gray-500">Genera modelos en JavaScript</div>
-                                    </div>
-                                </div>
-                            </div>
-                            
-                            <div class="p-3 border border-gray-200 rounded-lg hover:shadow-sm transition-shadow cursor-pointer">
-                                <div class="flex items-center space-x-3">
-                                    <div class="w-8 h-8 bg-red-100 rounded flex items-center justify-center">
-                                        <i class="fab fa-python text-red-600 text-sm"></i>
-                                    </div>
-                                    <div>
-                                        <div class="font-medium text-gray-800">Python Classes</div>
-                                        <div class="text-sm text-gray-500">Genera clases en Python</div>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                        
-                        <div class="mt-6">
-                            <textarea class="w-full h-32 p-3 border border-gray-200 rounded-lg text-sm font-mono" 
-                                      placeholder="// Tu código aparecerá aquí..."></textarea>
-                        </div>
-                    </div>
-                `
-            },
-            importar: {
-                title: 'Importar Contenido',
-                content: `
-                    <div class="space-y-4">
-                        <h3 class="text-lg font-semibold text-gray-800 mb-4">Opciones de Importación</h3>
-                        
-                        <div class="space-y-3">
-                            <div class="p-4 border-2 border-dashed border-gray-300 rounded-lg text-center hover:border-gray-400 transition-colors cursor-pointer">
-                                <i class="fas fa-file-code text-2xl text-gray-400 mb-2"></i>
-                                <div class="font-medium text-gray-700">Importar Código SQL</div>
-                                <div class="text-sm text-gray-500">Arrastra tu archivo .sql aquí</div>
-                            </div>
-                            
-                            <div class="p-4 border-2 border-dashed border-gray-300 rounded-lg text-center hover:border-gray-400 transition-colors cursor-pointer">
-                                <i class="fas fa-file-alt text-2xl text-gray-400 mb-2"></i>
-                                <div class="font-medium text-gray-700">Importar JSON Schema</div>
-                                <div class="text-sm text-gray-500">Arrastra tu archivo .json aquí</div>
-                            </div>
-                            
-                            <div class="p-4 border-2 border-dashed border-gray-300 rounded-lg text-center hover:border-gray-400 transition-colors cursor-pointer">
-                                <i class="fas fa-file-image text-2xl text-gray-400 mb-2"></i>
-                                <div class="font-medium text-gray-700">Importar Diagrama</div>
-                                <div class="text-sm text-gray-500">Formatos: .xml, .drawio</div>
-                            </div>
-                        </div>
-                        
-                        <div class="mt-6 p-4 bg-gray-50 rounded-lg">
-                            <p class="text-sm text-gray-600">
-                                <i class="fas fa-upload text-blue-500 mr-2"></i>
-                                También puedes importar desde URL o pegar código directamente
-                            </p>
-                        </div>
-                    </div>
-                `
-            },
-            exportar: {
-                title: 'Exportar Proyecto',
-                content: `
-                    <div class="space-y-4">
-                        <h3 class="text-lg font-semibold text-gray-800 mb-4">Opciones de Exportación</h3>
-                        
-                        <div class="space-y-3">
-                            <div class="p-3 border border-gray-200 rounded-lg hover:shadow-sm transition-shadow cursor-pointer">
-                                <div class="flex items-center space-x-3">
-                                    <div class="w-8 h-8 bg-blue-100 rounded flex items-center justify-center">
-                                        <i class="fas fa-image text-blue-600 text-sm"></i>
-                                    </div>
-                                    <div>
-                                        <div class="font-medium text-gray-800">Exportar como Imagen</div>
-                                        <div class="text-sm text-gray-500">PNG, JPG, SVG</div>
-                                    </div>
-                                </div>
-                            </div>
-                            
-                            <div class="p-3 border border-gray-200 rounded-lg hover:shadow-sm transition-shadow cursor-pointer">
-                                <div class="flex items-center space-x-3">
-                                    <div class="w-8 h-8 bg-green-100 rounded flex items-center justify-center">
-                                        <i class="fas fa-file-code text-green-600 text-sm"></i>
-                                    </div>
-                                    <div>
-                                        <div class="font-medium text-gray-800">Exportar Código SQL</div>
-                                        <div class="text-sm text-gray-500">Script completo de la base de datos</div>
-                                    </div>
-                                </div>
-                            </div>
-                            
-                            <div class="p-3 border border-gray-200 rounded-lg hover:shadow-sm transition-shadow cursor-pointer">
-                                <div class="flex items-center space-x-3">
-                                    <div class="w-8 h-8 bg-purple-100 rounded flex items-center justify-center">
-                                        <i class="fas fa-file-export text-purple-600 text-sm"></i>
-                                    </div>
-                                    <div>
-                                        <div class="font-medium text-gray-800">Exportar Proyecto</div>
-                                        <div class="text-sm text-gray-500">Archivo .graphus para compartir</div>
-                                    </div>
-                                </div>
-                            </div>
-                            
-                            <div class="p-3 border border-gray-200 rounded-lg hover:shadow-sm transition-shadow cursor-pointer">
-                                <div class="flex items-center space-x-3">
-                                    <div class="w-8 h-8 bg-yellow-100 rounded flex items-center justify-center">
-                                        <i class="fas fa-file-pdf text-yellow-600 text-sm"></i>
-                                    </div>
-                                    <div>
-                                        <div class="font-medium text-gray-800">Exportar Documentación</div>
-                                        <div class="text-sm text-gray-500">PDF con diagramas y código</div>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                `
-            }
-        };
-
-        function toggleSidebar() {
-            const sidebar = document.getElementById('sidebar');
-            isSidebarCollapsed = !isSidebarCollapsed;
-
-            if (isSidebarCollapsed) {
-                sidebar.classList.remove('sidebar-expanded');
-                sidebar.classList.add('sidebar-collapsed');
-
-                // Cerrar panel derecho si está abierto
-                if (isRightPanelOpen) {
-                    closeRightPanel();
-                }
-            } else {
-                sidebar.classList.remove('sidebar-collapsed');
-                sidebar.classList.add('sidebar-expanded');
-            }
-        }
-
-        function selectOption(option) {
-            if (isSidebarCollapsed) {
-                // Si está colapsado, expandir primero
-                toggleSidebar();
-                setTimeout(() => {
-                    selectOptionInternal(option);
-                }, 300);
-            } else {
-                selectOptionInternal(option);
-            }
-        }
-
-        function selectOptionInternal(option) {
-            // Remover selección anterior
-            document.querySelectorAll('.nav-option').forEach(btn => {
-                btn.classList.remove('selected-option');
-            });
-
-            // Añadir selección actual
-            const currentBtn = document.querySelector(`[data-option="${option}"]`);
-            currentBtn.classList.add('selected-option');
-
-            if (currentOption === option && isRightPanelOpen) {
-                closeRightPanel();
-            } else {
-                openRightPanel(option);
-            }
-
-            currentOption = option;
-        }
-
-        function openRightPanel(option) {
-            const panel = document.getElementById('rightPanel');
-            const content = document.getElementById('panelContent');
-
-            panel.classList.remove('panel-collapsed');
-            panel.classList.add('panel-expanded');
-
-            // Cargar contenido
-            content.innerHTML = `
-                <div class="slide-in">
-                    <div class="flex items-center justify-between mb-6 pb-4 border-b border-slate-200">
-                        <h2 class="text-xl font-semibold text-slate-800">${panelContent[option].title}</h2>
-                        <button onclick="closeRightPanel()" class="p-2 hover:bg-slate-100 rounded-lg transition-colors">
-                            <i class="fas fa-times text-slate-500 hover:text-slate-700"></i>
-                        </button>
-                    </div>
-                    ${panelContent[option].content}
-=======
                     
                     <div id="relacionElement" class="p-3 border border-slate-200 rounded-xl hover:shadow-md hover:bg-white/80 transition-all duration-200 cursor-pointer group">
                         <div class="flex items-center space-x-3">
@@ -713,7 +758,6 @@ CREATE TABLE usuarios (
                             <i class="fas fa-code mr-1"></i>SQL
                         </div>
                     </div>
->>>>>>> Stashed changes
                 </div>
                 
                 <div class="bg-blue-50 border border-blue-200 rounded-xl p-4">
@@ -918,11 +962,6 @@ const erElements = {
 
 // ===== FUNCIONES PRINCIPALES =====
 
-<<<<<<< Updated upstream
-            // Remover selección
-            document.querySelectorAll('.nav-option').forEach(btn => {
-                btn.classList.remove('selected-option');
-=======
 function toggleSidebar() {
     const sidebar = document.getElementById('sidebar');
     const sidebarTexts = document.querySelectorAll('.sidebar-text');
@@ -943,7 +982,6 @@ function toggleSidebar() {
         setTimeout(() => {
             tooltips.forEach(tooltip => {
                 tooltip.style.display = 'block';
->>>>>>> Stashed changes
             });
         }, 400);
 
@@ -954,11 +992,6 @@ function toggleSidebar() {
         sidebar.classList.remove('sidebar-collapsed');
         sidebar.classList.add('sidebar-expanded');
 
-<<<<<<< Updated upstream
-        // Event listeners
-        document.getElementById('logoToggle').addEventListener('click', toggleSidebar);
-    </script>
-=======
         tooltips.forEach(tooltip => {
             tooltip.style.display = 'none';
         });
@@ -1554,199 +1587,6 @@ window.clearSQL = clearSQL;
 window.copySQL = copySQL;
 window.downloadSQL = downloadSQL;
 window.generateSQL = generateSQL;
-</script>
-<script>
-// ===== SCRIPT COMPLEMENTARIO PARA EL GRID Y ENTIDADES =====
-
-// Crear el área de trabajo con cuadricula en la parte derecha
-function createWorkspaceArea() {
-    let workspace = document.getElementById("workspaceArea");
-    
-    if (!workspace) {
-        workspace = document.createElement("div");
-        workspace.id = "workspaceArea";
-        workspace.style.position = "relative";
-        workspace.style.width = "100%";
-        workspace.style.height = "100%";
-        workspace.style.backgroundSize = "20px 20px";
-        workspace.style.backgroundImage =
-            "linear-gradient(to right, #e5e7eb 1px, transparent 1px), " +
-            "linear-gradient(to bottom, #e5e7eb 1px, transparent 1px)";
-        workspace.style.overflow = "hidden";
-        workspace.classList.add("rounded-lg", "shadow-inner");
-
-        // Insertar dentro del contenedor de la derecha
-        const container = document.getElementById("workspaceContainer");
-        container.appendChild(workspace);
-
-        // Mensaje inicial
-        const welcome = document.createElement("div");
-        welcome.id = "welcomeMessage";
-        welcome.className = "absolute inset-0 flex items-center justify-center text-gray-400 text-lg";
-        welcome.innerText = "Haz clic en un tipo de identidad para comenzar tu diagrama ER";
-        workspace.appendChild(welcome);
-    }
-}
-
-// Ejecutar cuando el DOM esté listo
-document.addEventListener("DOMContentLoaded", () => {
-    document.addEventListener("click", (e) => {
-        const option = e.target.closest(".entity-option");
-        if (option) {
-            const entityType = option.dataset.entity;
-
-            // Crear workspace si no existe
-            createWorkspaceArea();
-
-            // ⚠️ Llamar a la función principal SOLO si existe
-            if (typeof addEntityToWorkspace === "function") {
-                addEntityToWorkspace(entityType);
-            } else {
-                console.error("❌ Error: la función addEntityToWorkspace no está definida todavía.");
-            }
-        }
-    });
-});
-</script>
-<script>
-// ===== Crear área de trabajo con cuadrícula =====
-function createWorkspaceArea() {
-    let workspace = document.getElementById("workspaceArea");
-
-    if (!workspace) {
-        const mainArea = document.querySelector(".relative.z-10.h-full.flex.items-center.justify-center.-mt-16");
-        if (mainArea) {
-            mainArea.innerHTML = ""; // borrar bienvenida
-
-            workspace = document.createElement("div");
-            workspace.id = "workspaceArea";
-            workspace.style.position = "relative";
-            workspace.style.width = "100%";
-            workspace.style.height = "100%";
-            workspace.style.backgroundSize = "20px 20px";
-            workspace.style.backgroundImage =
-                "linear-gradient(to right, #e5e7eb 1px, transparent 1px), " +
-                "linear-gradient(to bottom, #e5e7eb 1px, transparent 1px)";
-            workspace.style.overflow = "hidden";
-            workspace.classList.add("rounded-lg", "shadow-inner", "bg-white");
-
-            mainArea.appendChild(workspace);
-        }
-    }
-    return workspace;
-}
-
-// ===== Hacer entidades arrastrables =====
-function makeEntityDraggable(entity) {
-    let offsetX = 0, offsetY = 0, isDragging = false;
-
-    entity.addEventListener("mousedown", (e) => {
-        isDragging = true;
-        entity.classList.add("selected-entity");
-        offsetX = e.clientX - entity.offsetLeft;
-        offsetY = e.clientY - entity.offsetTop;
-        entity.style.zIndex = "1000";
-    });
-
-    document.addEventListener("mousemove", (e) => {
-        if (isDragging) {
-            entity.style.position = "absolute";
-            entity.style.left = (e.clientX - offsetX) + "px";
-            entity.style.top = (e.clientY - offsetY) + "px";
-        }
-    });
-
-    document.addEventListener("mouseup", () => {
-        isDragging = false;
-        entity.style.zIndex = "1";
-    });
-
-    document.addEventListener("click", (e) => {
-        if (!entity.contains(e.target)) {
-            entity.classList.remove("selected-entity");
-        }
-    });
-}
-
-// ===== Eliminar con tecla Delete =====
-document.addEventListener("keydown", (e) => {
-    if (e.key === "Delete" || e.key === "Backspace") {
-        const selected = document.querySelector(".selected-entity");
-        if (selected) selected.remove();
-    }
-});
-
-// ===== Crear entidades según el tipo seleccionado =====
-function addEntityToWorkspace(type) {
-    const entity = document.createElement("div");
-    entity.className = "er-element bg-white border border-gray-300 rounded-lg shadow-md p-3";
-    entity.style.left = "50px";
-    entity.style.top = "50px";
-    entity.style.minWidth = "220px";
-
-    // Encabezado
-    const header = document.createElement("div");
-    header.className = "font-bold text-indigo-600 mb-2 text-sm";
-    header.innerText = type;
-    entity.appendChild(header);
-
-    // Cuerpo (tabla)
-    const table = document.createElement("table");
-    table.className = "w-full text-xs border border-gray-300";
-
-    if (type === "Entidad Simple") {
-        table.innerHTML = `
-            <tr><td class="border px-2 py-1">Nombre de la tabla</td></tr>
-            <tr><td class="border px-2 py-1">Nombre del campo</td></tr>
-        `;
-    }
-
-    if (type === "Entidad con Llaves") {
-        table.innerHTML = `
-            <tr><td class="border px-2 py-1">Nombre de la tabla</td></tr>
-            <tr><td class="border px-2 py-1">Nombre de la llave</td></tr>
-            <tr><td class="border px-2 py-1">Nombre del campo</td></tr>
-        `;
-    }
-
-    if (type === "Entidad con Tipos") {
-        table.innerHTML = `
-            <tr><td class="border px-2 py-1">Nombre de la tabla</td></tr>
-            <tr><td class="border px-2 py-1">Nombre de la llave</td></tr>
-            <tr><td class="border px-2 py-1">Nombre del campo / Tipo de dato</td></tr>
-        `;
-    }
-
-    if (type === "Entidad Completa") {
-        table.innerHTML = `
-            <tr><td class="border px-2 py-1">Nombre de la tabla</td></tr>
-            <tr><td class="border px-2 py-1">Nombre de la llave</td></tr>
-            <tr><td class="border px-2 py-1">Nombre del campo</td></tr>
-            <tr><td class="border px-2 py-1">Nombre del campo / Tipo de dato</td></tr>
-        `;
-    }
-
-    entity.appendChild(table);
-
-    return entity;
-}
-
-// ===== Escuchar clics del menú =====
-document.addEventListener("DOMContentLoaded", () => {
-    document.addEventListener("click", (e) => {
-        const option = e.target.closest(".entity-option");
-        if (option) {
-            const entityType = option.dataset.entity;
-
-            const workspace = createWorkspaceArea();
-            const newEntity = addEntityToWorkspace(entityType);
-            if (newEntity) {
-                workspace.appendChild(newEntity);
-                makeEntityDraggable(newEntity);
-            }
-        }
-    });
-});
 </script>
 
 </body>
