@@ -1588,6 +1588,147 @@ window.copySQL = copySQL;
 window.downloadSQL = downloadSQL;
 window.generateSQL = generateSQL;
 </script>
+<script>
+// ===== Crear área de trabajo con cuadrícula =====
+function createWorkspaceArea() {
+    let workspace = document.getElementById("workspaceArea");
+
+    if (!workspace) {
+        const mainArea = document.querySelector(".relative.z-10.h-full.flex.items-center.justify-center.-mt-16");
+        if (mainArea) {
+            mainArea.innerHTML = ""; // borrar bienvenida
+
+            workspace = document.createElement("div");
+            workspace.id = "workspaceArea";
+            workspace.style.position = "relative";
+            workspace.style.width = "100%";
+            workspace.style.height = "100%";
+            workspace.style.backgroundSize = "20px 20px";
+            workspace.style.backgroundImage =
+                "linear-gradient(to right, #e5e7eb 1px, transparent 1px), " +
+                "linear-gradient(to bottom, #e5e7eb 1px, transparent 1px)";
+            workspace.style.overflow = "hidden";
+            workspace.classList.add("rounded-lg", "shadow-inner", "bg-white");
+
+            mainArea.appendChild(workspace);
+        }
+    }
+    return workspace;
+}
+
+// ===== Hacer entidades arrastrables =====
+function makeEntityDraggable(entity) {
+    let offsetX = 0, offsetY = 0, isDragging = false;
+
+    entity.addEventListener("mousedown", (e) => {
+        isDragging = true;
+        entity.classList.add("selected-entity");
+        offsetX = e.clientX - entity.offsetLeft;
+        offsetY = e.clientY - entity.offsetTop;
+        entity.style.zIndex = "1000";
+    });
+
+    document.addEventListener("mousemove", (e) => {
+        if (isDragging) {
+            entity.style.position = "absolute";
+            entity.style.left = (e.clientX - offsetX) + "px";
+            entity.style.top = (e.clientY - offsetY) + "px";
+        }
+    });
+
+    document.addEventListener("mouseup", () => {
+        isDragging = false;
+        entity.style.zIndex = "1";
+    });
+
+    document.addEventListener("click", (e) => {
+        if (!entity.contains(e.target)) {
+            entity.classList.remove("selected-entity");
+        }
+    });
+}
+
+// ===== Eliminar con tecla Delete =====
+document.addEventListener("keydown", (e) => {
+    if (e.key === "Delete" || e.key === "Backspace") {
+        const selected = document.querySelector(".selected-entity");
+        if (selected) selected.remove();
+    }
+});
+
+// ===== Crear entidades según el tipo seleccionado =====
+function addEntityToWorkspace(type) {
+    const entity = document.createElement("div");
+    entity.className = "er-element bg-white border border-gray-300 rounded-lg shadow-md p-3";
+    entity.style.left = "50px";
+    entity.style.top = "50px";
+    entity.style.minWidth = "220px";
+
+    // Encabezado
+    const header = document.createElement("div");
+    header.className = "font-bold text-indigo-600 mb-2 text-sm";
+    header.innerText = type;
+    entity.appendChild(header);
+
+    // Cuerpo (tabla)
+    const table = document.createElement("table");
+    table.className = "w-full text-xs border border-gray-300";
+
+    if (type === "Entidad Simple") {
+        table.innerHTML = `
+            <tr><td class="border px-2 py-1">Nombre de la tabla</td></tr>
+            <tr><td class="border px-2 py-1">Nombre del campo</td></tr>
+        `;
+    }
+
+    if (type === "Entidad con Llaves") {
+        table.innerHTML = `
+            <tr><td class="border px-2 py-1">Nombre de la tabla</td></tr>
+            <tr><td class="border px-2 py-1">Nombre de la llave</td></tr>
+            <tr><td class="border px-2 py-1">Nombre del campo</td></tr>
+        `;
+    }
+
+    if (type === "Entidad con Tipos") {
+        table.innerHTML = `
+            <tr><td class="border px-2 py-1">Nombre de la tabla</td></tr>
+            <tr><td class="border px-2 py-1">Nombre de la llave</td></tr>
+            <tr><td class="border px-2 py-1">Nombre del campo / Tipo de dato</td></tr>
+        `;
+    }
+
+    if (type === "Entidad Completa") {
+        table.innerHTML = `
+            <tr><td class="border px-2 py-1">Nombre de la tabla</td></tr>
+            <tr><td class="border px-2 py-1">Nombre de la llave</td></tr>
+            <tr><td class="border px-2 py-1">Nombre del campo</td></tr>
+            <tr><td class="border px-2 py-1">Nombre del campo / Tipo de dato</td></tr>
+        `;
+    }
+
+    entity.appendChild(table);
+
+    return entity;
+}
+
+// ===== Escuchar clics del menú =====
+document.addEventListener("DOMContentLoaded", () => {
+    document.addEventListener("click", (e) => {
+        const option = e.target.closest(".entity-option");
+        if (option) {
+            const entityType = option.dataset.entity;
+
+            const workspace = createWorkspaceArea();
+            const newEntity = addEntityToWorkspace(entityType);
+            if (newEntity) {
+                workspace.appendChild(newEntity);
+                makeEntityDraggable(newEntity);
+            }
+        }
+    });
+});
+</script>
+
 
 </body>
 
