@@ -7,7 +7,11 @@
     <title>GraphUs - Professional Navbar</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Varela+Round:wght@400&display=swap" rel="stylesheet">
     <style>
+        /* Estilos originales del sidebar */
         .sidebar-collapsed {
             width: 5rem;
         }
@@ -72,7 +76,6 @@
 
         .nav-icon-container {
             min-width: 2.25rem;
-            /* w-9 equivalent */
             transition: all 0.3s ease;
         }
 
@@ -120,10 +123,220 @@
             box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
             border-left: 4px solid #6366f1;
         }
+
+        /* Sistema de Toasts */
+        :root {
+            --toast-help-primary: #05478a;
+            --toast-help-secondary: #0070e0;
+            --toast-success-primary: #005e38;
+            --toast-success-secondary: #03a65a;
+            --toast-warning-primary: #c24914;
+            --toast-warning-secondary: #fc8621;
+            --toast-error-primary: #851d41;
+            --toast-error-secondary: #db3056;
+        }
+
+        .toast-container {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            z-index: 1000;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            max-width: 400px;
+        }
+
+        .toast-item {
+            overflow: hidden;
+            max-height: 0;
+            opacity: 0;
+            transition: all 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+            transform: translateX(100%);
+            margin-bottom: 0;
+        }
+
+        .toast-item.show {
+            max-height: 200px;
+            opacity: 1;
+            transform: translateX(0);
+            margin-bottom: 10px;
+        }
+
+        .toast-item.removing {
+            max-height: 0;
+            opacity: 0;
+            transform: translateX(100%);
+            margin-bottom: 0;
+        }
+
+        .toast {
+            background: var(--toast-bg);
+            color: #f5f5f5;
+            padding: 1rem 2rem 1rem 6rem;
+            border-radius: 20px;
+            position: relative;
+            font-family: "Varela Round", sans-serif;
+            font-weight: 400;
+            text-align: left;
+            min-width: 280px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        /* Decoración de gotas animada */
+        .toast::before {
+            content: "";
+            position: absolute;
+            width: 5.5rem;
+            height: 6rem;
+            background: 
+                radial-gradient(circle at 22% 3.8rem, var(--toast-primary) 0.75rem, transparent calc(0.75rem + 1px)),
+                radial-gradient(circle at 95% 1.9rem, var(--toast-primary) 0.07rem, transparent calc(0.07rem + 1px)),
+                radial-gradient(circle at 80% 2.25rem, var(--toast-primary) 0.18rem, transparent calc(0.18rem + 1px)),
+                radial-gradient(circle at 80% 75%, var(--toast-primary) 0.35rem, transparent calc(0.35rem + 1px)),
+                radial-gradient(circle at 43% 2.3rem, var(--toast-primary) 0.07rem, transparent calc(0.07rem + 1px)),
+                radial-gradient(circle at 40% 1rem, var(--toast-primary) 0.12rem, transparent calc(0.12rem + 1px)),
+                radial-gradient(circle at 20% 1.5rem, var(--toast-primary) 0.25rem, transparent calc(0.25rem + 1px)),
+                radial-gradient(circle at 64% 51%, var(--toast-primary) 0.45rem, transparent calc(0.45rem + 1px)),
+                radial-gradient(circle at 0% 120%, var(--toast-primary) 4rem, transparent calc(4rem + 1px));
+            background-repeat: no-repeat;
+            bottom: 0;
+            left: 0;
+            border-radius: 0 0 0 20px;
+            opacity: 0.6;
+        }
+
+        /* Icono circular */
+        .toast::after {
+            content: var(--toast-icon);
+            position: absolute;
+            width: 3.5rem;
+            height: 3.5rem;
+            background: var(--toast-primary);
+            top: -1.75rem;
+            left: 2rem;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.8rem;
+            color: white;
+            font-weight: bold;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+            border: 3px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .toast h3 {
+            font-size: 1.2rem;
+            margin: 0 0 0.5rem 0;
+            font-weight: 600;
+            position: relative;
+            color: #ffffff;
+        }
+
+        .toast p {
+            font-size: 0.95rem;
+            margin: 0;
+            line-height: 1.4;
+            color: rgba(255, 255, 255, 0.9);
+        }
+
+        .toast-close {
+            position: absolute;
+            top: 1rem;
+            right: 1rem;
+            width: 1.5rem;
+            height: 1.5rem;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.2);
+            border: none;
+            color: white;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.2rem;
+            transition: all 0.3s ease;
+            backdrop-filter: blur(5px);
+        }
+
+        .toast-close:hover {
+            background: rgba(255, 255, 255, 0.3);
+            transform: scale(1.1);
+        }
+
+        /* Tipos de toast */
+        .toast.help {
+            --toast-primary: var(--toast-help-primary);
+            --toast-bg: var(--toast-help-secondary);
+            --toast-icon: "?";
+        }
+
+        .toast.success {
+            --toast-primary: var(--toast-success-primary);
+            --toast-bg: var(--toast-success-secondary);
+            --toast-icon: "✓";
+        }
+
+        .toast.warning {
+            --toast-primary: var(--toast-warning-primary);
+            --toast-bg: var(--toast-warning-secondary);
+            --toast-icon: "!";
+        }
+
+        .toast.error {
+            --toast-primary: var(--toast-error-primary);
+            --toast-bg: var(--toast-error-secondary);
+            --toast-icon: "×";
+        }
+
+        /* Ajuste específico para el ícono de éxito */
+        .toast.success::after {
+            font-size: 1.4rem;
+        }
+
+        /* Animación de entrada suave */
+        @keyframes toastSlideIn {
+            from {
+                transform: translateX(100%) rotateZ(5deg);
+                opacity: 0;
+            }
+            to {
+                transform: translateX(0) rotateZ(0deg);
+                opacity: 1;
+            }
+        }
+
+        .toast-item.show {
+            animation: toastSlideIn 0.5s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+        }
+
+        /* Efecto hover en el toast */
+        .toast:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.4);
+        }
+
+        /* Barra de progreso para auto-close */
+        .toast-progress {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            height: 3px;
+            background: rgba(255, 255, 255, 0.3);
+            border-radius: 0 0 20px 20px;
+            transform-origin: left;
+            transition: transform linear;
+        }
     </style>
 </head>
 
 <body class="bg-gray-50 min-h-screen">
+    <!-- Contenedor de Toasts -->
+    <div id="toast-container" class="toast-container"></div>
+
     <div class="flex">
         <!-- Sidebar Principal -->
         <div id="sidebar"
@@ -198,8 +411,6 @@
                     </button>
                 </div>
             </div>
-
-
         </div>
 
         <!-- Panel Lateral Derecho -->
@@ -300,6 +511,123 @@
     </div>
 
     <script>
+        // SISTEMA DE TOASTS
+        class ToastSystem {
+            constructor() {
+                this.container = document.getElementById('toast-container');
+                this.toasts = new Map();
+                this.toastCounter = 0;
+            }
+
+            show(type, title, message, duration = 5000, actions = null) {
+                const id = `toast-${++this.toastCounter}`;
+                const toast = this.createToast(id, type, title, message, actions);
+                
+                this.toasts.set(id, {
+                    element: toast,
+                    timeout: duration > 0 ? setTimeout(() => this.hide(id), duration) : null
+                });
+
+                this.container.appendChild(toast);
+                
+                // Trigger animation
+                setTimeout(() => toast.classList.add('show'), 10);
+                
+                return id;
+            }
+
+            createToast(id, type, title, message, actions) {
+                const toastItem = document.createElement('div');
+                toastItem.className = 'toast-item';
+                toastItem.dataset.id = id;
+
+                let actionsHTML = '';
+                if (actions && actions.length > 0) {
+                    actionsHTML = `
+                        <div style="margin-top: 0.75rem; display: flex; gap: 0.5rem;">
+                            ${actions.map(action => `
+                                <button onclick="${action.onClick}" 
+                                    style="background: rgba(255,255,255,0.2); border: 1px solid rgba(255,255,255,0.3); 
+                                           color: white; padding: 0.4rem 0.8rem; border-radius: 8px; font-size: 0.85rem;
+                                           cursor: pointer; transition: all 0.2s ease;"
+                                    onmouseover="this.style.background='rgba(255,255,255,0.3)'"
+                                    onmouseout="this.style.background='rgba(255,255,255,0.2)'">
+                                    ${action.text}
+                                </button>
+                            `).join('')}
+                        </div>
+                    `;
+                }
+
+                toastItem.innerHTML = `
+                    <div class="toast ${type}">
+                        <button class="toast-close" onclick="toastManager.hide('${id}')">&times;</button>
+                        <h3>${title}</h3>
+                        <p>${message}</p>
+                        ${actionsHTML}
+                    </div>
+                `;
+
+                return toastItem;
+            }
+
+            hide(id) {
+                const toast = this.toasts.get(id);
+                if (!toast) return;
+
+                // Clear timeout if exists
+                if (toast.timeout) {
+                    clearTimeout(toast.timeout);
+                }
+
+                // Trigger exit animation
+                toast.element.classList.add('removing');
+                
+                // Remove from DOM after animation
+                setTimeout(() => {
+                    if (toast.element.parentNode) {
+                        toast.element.parentNode.removeChild(toast.element);
+                    }
+                    this.toasts.delete(id);
+                }, 400);
+            }
+
+            // Métodos de conveniencia
+            success(title, message, duration) {
+                return this.show('success', title, message, duration);
+            }
+
+            error(title, message, duration) {
+                return this.show('error', title, message, duration);
+            }
+
+            warning(title, message, duration) {
+                return this.show('warning', title, message, duration);
+            }
+
+            help(title, message, duration) {
+                return this.show('help', title, message, duration);
+            }
+
+            // Método para confirmación con botones
+            confirm(title, message, onConfirm, onCancel) {
+                const actions = [
+                    { text: 'Cancelar', onClick: `toastManager.hide('${this.toastCounter + 1}'); ${onCancel || ''}` },
+                    { text: 'Confirmar', onClick: `toastManager.hide('${this.toastCounter + 1}'); ${onConfirm}` }
+                ];
+                return this.show('warning', title, message, 0, actions); // 0 = no auto-close
+            }
+        }
+
+        // Instancia global
+        const toastManager = new ToastSystem();
+
+        // Función de conveniencia para mostrar toasts
+        function showToast(type, title, message, duration = 5000) {
+            return toastManager.show(type, title, message, duration);
+        }
+
+        // RESTO DEL CÓDIGO ORIGINAL
         let currentOption = null;
         let isRightPanelOpen = false;
         let isSidebarCollapsed = false;
@@ -387,7 +715,7 @@
                             </div>
                             
                             <div class="flex space-x-2">
-                                <button class="flex-1 bg-emerald-600 hover:bg-emerald-700 text-white px-4 py-2 rounded-lg font-medium transition-colors duration-200">
+                                <button onclick="generateSQL()" class="flex-1 bg-emerald-600 hover:bg-emerald-700 text-white px-4 py-2 rounded-lg font-medium transition-colors duration-200">
                                     <i class="fas fa-magic mr-2"></i>
                                     Generar SQL
                                 </button>
@@ -554,39 +882,32 @@ CREATE TABLE usuarios (
             isSidebarCollapsed = !isSidebarCollapsed;
 
             if (isSidebarCollapsed) {
-                // Ocultar texto INMEDIATAMENTE
                 sidebarTexts.forEach(text => {
                     text.style.display = 'none';
                 });
 
-                // Luego colapsar sidebar
                 setTimeout(() => {
                     sidebar.classList.remove('sidebar-expanded');
                     sidebar.classList.add('sidebar-collapsed');
                 }, 50);
 
-                // Mostrar tooltips después de que termine la animación
                 setTimeout(() => {
                     tooltips.forEach(tooltip => {
                         tooltip.style.display = 'block';
                     });
                 }, 400);
 
-                // Cerrar panel derecho si está abierto
                 if (isRightPanelOpen) {
                     closeRightPanel();
                 }
             } else {
-                // Expandir sidebar primero
                 sidebar.classList.remove('sidebar-collapsed');
                 sidebar.classList.add('sidebar-expanded');
 
-                // Ocultar tooltips inmediatamente
                 tooltips.forEach(tooltip => {
                     tooltip.style.display = 'none';
                 });
 
-                // Mostrar texto después de que el sidebar se expanda completamente
                 setTimeout(() => {
                     sidebarTexts.forEach(text => {
                         text.style.display = 'block';
@@ -597,7 +918,6 @@ CREATE TABLE usuarios (
 
         function selectOption(option) {
             if (isSidebarCollapsed) {
-                // Si está colapsado, expandir primero
                 toggleSidebar();
                 setTimeout(() => {
                     selectOptionInternal(option);
@@ -608,12 +928,10 @@ CREATE TABLE usuarios (
         }
 
         function selectOptionInternal(option) {
-            // Remover selección anterior
             document.querySelectorAll('.nav-option').forEach(btn => {
                 btn.classList.remove('bg-white', 'shadow-md', 'border-l-4', 'border-indigo-500');
             });
 
-            // Añadir selección actual
             const currentBtn = document.querySelector(`[data-option="${option}"]`);
             currentBtn.classList.add('bg-white', 'shadow-md', 'border-l-4', 'border-indigo-500');
 
@@ -633,7 +951,6 @@ CREATE TABLE usuarios (
             panel.classList.remove('panel-collapsed');
             panel.classList.add('panel-expanded');
 
-            // Cargar contenido
             content.innerHTML = `
                 <div class="slide-in">
                     <div class="flex items-center justify-between mb-6 pb-4 border-b border-slate-200">
@@ -654,7 +971,6 @@ CREATE TABLE usuarios (
             panel.classList.remove('panel-expanded');
             panel.classList.add('panel-collapsed');
 
-            // Remover selección
             document.querySelectorAll('.nav-option').forEach(btn => {
                 btn.classList.remove('bg-white', 'shadow-md', 'border-l-4', 'border-indigo-500');
             });
@@ -663,9 +979,9 @@ CREATE TABLE usuarios (
             currentOption = null;
         }
 
-        // Funciones para el editor SQL
+        // Funciones del editor SQL con toasts integrados
         let isExpanded = false;
-        let originalHeight = '16rem'; // h-64
+        let originalHeight = '16rem';
 
         function expandSQLEditor() {
             const editor = document.getElementById('sqlEditor');
@@ -673,71 +989,114 @@ CREATE TABLE usuarios (
             const text = document.getElementById('expandText');
 
             if (!isExpanded) {
-                // Expandir
-                editor.style.height = '32rem'; // h-128
+                editor.style.height = '32rem';
                 icon.className = 'fas fa-compress-alt mr-1';
                 text.textContent = 'Contraer';
                 isExpanded = true;
+                showToast('success', 'Editor Expandido', 'El editor ahora tiene más espacio para trabajar');
             } else {
-                // Contraer
                 editor.style.height = originalHeight;
                 icon.className = 'fas fa-expand-alt mr-1';
                 text.textContent = 'Expandir';
                 isExpanded = false;
+                showToast('help', 'Editor Contraído', 'El editor volvió a su tamaño normal');
             }
         }
 
         function clearSQL() {
             const editor = document.getElementById('sqlEditor');
             if (editor.value.trim() !== '') {
-                if (confirm('¿Estás seguro de que quieres limpiar todo el código SQL?')) {
-                    editor.value = '';
-                    editor.focus();
-                }
+                // Usar toast de confirmación en lugar de confirm nativo
+                toastManager.confirm(
+                    '¿Limpiar código SQL?', 
+                    '¿Estás seguro de que quieres eliminar todo el código SQL? Esta acción no se puede deshacer.',
+                    `document.getElementById('sqlEditor').value = ''; document.getElementById('sqlEditor').focus(); showToast('success', 'Código Limpiado', 'El editor SQL ha sido limpiado correctamente');`,
+                    `showToast('help', 'Cancelado', 'El código SQL se mantiene intacto');`
+                );
+            } else {
+                showToast('warning', 'Editor Vacío', 'No hay código SQL para limpiar');
             }
         }
 
         function copySQL() {
             const editor = document.getElementById('sqlEditor');
             if (editor.value.trim() === '') {
-                alert('No hay código SQL para copiar');
+                showToast('warning', 'Sin Contenido', 'No hay código SQL para copiar');
                 return;
             }
 
             navigator.clipboard.writeText(editor.value).then(() => {
-                // Feedback visual temporal
-                const button = event.target.closest('button');
-                const icon = button.querySelector('i');
-                const originalClass = icon.className;
-
-                icon.className = 'fas fa-check';
-                button.classList.add('bg-emerald-100', 'border-emerald-400');
-
-                setTimeout(() => {
-                    icon.className = originalClass;
-                    button.classList.remove('bg-emerald-100', 'border-emerald-400');
-                }, 2000);
+                showToast('success', '¡Copiado!', 'El código SQL se ha copiado al portapapeles');
             }).catch(() => {
-                alert('Error al copiar el código');
+                showToast('error', 'Error al Copiar', 'No se pudo copiar el código al portapapeles');
             });
         }
 
         function downloadSQL() {
             const editor = document.getElementById('sqlEditor');
             if (editor.value.trim() === '') {
-                alert('No hay código SQL para descargar');
+                showToast('warning', 'Sin Contenido', 'No hay código SQL para descargar');
                 return;
             }
 
-            const blob = new Blob([editor.value], { type: 'text/plain' });
-            const url = window.URL.createObjectURL(blob);
-            const a = document.createElement('a');
-            a.href = url;
-            a.download = 'schema.sql';
-            document.body.appendChild(a);
-            a.click();
-            document.body.removeChild(a);
-            window.URL.revokeObjectURL(url);
+            try {
+                const blob = new Blob([editor.value], { type: 'text/plain' });
+                const url = window.URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = 'schema.sql';
+                document.body.appendChild(a);
+                a.click();
+                document.body.removeChild(a);
+                window.URL.revokeObjectURL(url);
+                
+                showToast('success', 'Descarga Iniciada', 'El archivo schema.sql se está descargando');
+            } catch (error) {
+                showToast('error', 'Error de Descarga', 'No se pudo descargar el archivo SQL');
+            }
+        }
+
+        function generateSQL() {
+            const editor = document.getElementById('sqlEditor');
+            const sampleSQL = `-- Esquema de ejemplo generado por GraphUs
+CREATE DATABASE IF NOT EXISTS mi_proyecto;
+USE mi_proyecto;
+
+CREATE TABLE usuarios (
+    id INT PRIMARY KEY AUTO_INCREMENT,
+    nombre VARCHAR(100) NOT NULL,
+    email VARCHAR(150) UNIQUE NOT NULL,
+    password VARCHAR(255) NOT NULL,
+    fecha_registro TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    activo BOOLEAN DEFAULT TRUE
+);
+
+CREATE TABLE perfiles (
+    id INT PRIMARY KEY AUTO_INCREMENT,
+    usuario_id INT NOT NULL,
+    bio TEXT,
+    avatar VARCHAR(255),
+    fecha_nacimiento DATE,
+    FOREIGN KEY (usuario_id) REFERENCES usuarios(id) ON DELETE CASCADE
+);
+
+CREATE TABLE posts (
+    id INT PRIMARY KEY AUTO_INCREMENT,
+    usuario_id INT NOT NULL,
+    titulo VARCHAR(200) NOT NULL,
+    contenido TEXT NOT NULL,
+    fecha_creacion TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    fecha_actualizacion TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    FOREIGN KEY (usuario_id) REFERENCES usuarios(id) ON DELETE CASCADE
+);
+
+-- Índices para mejorar el rendimiento
+CREATE INDEX idx_usuarios_email ON usuarios(email);
+CREATE INDEX idx_posts_usuario ON posts(usuario_id);
+CREATE INDEX idx_posts_fecha ON posts(fecha_creacion);`;
+
+            editor.value = sampleSQL;
+            showToast('success', 'SQL Generado', 'Se ha generado un esquema de ejemplo en el editor');
         }
 
         // Event listeners
@@ -747,6 +1106,11 @@ CREATE TABLE usuarios (
         document.querySelectorAll('.tooltip').forEach(tooltip => {
             tooltip.style.display = 'none';
         });
+
+        // Toast de bienvenida
+        setTimeout(() => {
+            showToast('help', '¡Bienvenido a GraphUs!', 'Usa los botones del sidebar para utilizar lo que es GraphUs', 8000);
+        }, 1000);
     </script>
 </body>
 
