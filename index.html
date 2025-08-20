@@ -1608,7 +1608,7 @@ window.downloadSQL = downloadSQL;
 window.generateSQL = generateSQL;
 </script>
 <script>
-// ===== Crear área de trabajo con cuadrícula =====
+    // ===== Crear área de trabajo con cuadrícula =====
 function createWorkspaceArea() {
     let workspace = document.getElementById("workspaceArea");
 
@@ -1635,16 +1635,294 @@ function createWorkspaceArea() {
     return workspace;
 }
 
+// ===== Crear barra de herramientas global moderna en la esquina superior derecha =====
+function createGlobalToolbar() {
+    // Verificar si ya existe
+    if (document.getElementById("globalToolbar")) return;
+    
+    const toolbar = document.createElement("div");
+    toolbar.id = "globalToolbar";
+    toolbar.style.position = "fixed";
+    toolbar.style.top = "80px"; // Debajo del header existente
+    toolbar.style.right = "24px"; // Esquina superior derecha
+    toolbar.style.backgroundColor = "rgba(255, 255, 255, 0.95)";
+    toolbar.style.backdropFilter = "blur(20px)";
+    toolbar.style.border = "1px solid rgba(226, 232, 240, 0.6)";
+    toolbar.style.borderRadius = "20px"; // Más redondeado
+    toolbar.style.padding = "12px 8px";
+    toolbar.style.zIndex = "1000";
+    toolbar.style.boxShadow = "0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04)";
+    toolbar.style.display = "flex";
+    toolbar.style.flexDirection = "column";
+    toolbar.style.gap = "8px";
+    toolbar.style.maxWidth = "56px";
+    toolbar.style.transition = "all 0.3s cubic-bezier(0.4, 0, 0.2, 1)";
+
+    // Botones de la barra de herramientas con colores modernos
+    const buttons = [
+        { id: "btn-add-field", icon: "fas fa-plus", title: "Agregar Campo", action: "addField", color: "linear-gradient(135deg, #10b981, #059669)" },
+        { id: "btn-remove-field", icon: "fas fa-minus", title: "Eliminar Campo", action: "removeField", color: "linear-gradient(135deg, #ef4444, #dc2626)" },
+        { id: "btn-add-key", icon: "fas fa-key", title: "Agregar Llave", action: "addKey", color: "linear-gradient(135deg, #f59e0b, #d97706)" },
+        { id: "btn-bold", icon: "fas fa-bold", title: "Negrita", action: "toggleBold", color: "linear-gradient(135deg, #6b7280, #374151)" },
+        { id: "btn-font-family", icon: "fas fa-font", title: "Cambiar Fuente", action: "changeFontFamily", color: "linear-gradient(135deg, #06b6d4, #0891b2)" },
+        { id: "btn-text-color", icon: "fas fa-palette", title: "Color Texto", action: "changeTextColor", color: "linear-gradient(135deg, #f97316, #ea580c)" },
+        { id: "btn-bg-color", icon: "fas fa-fill-drip", title: "Color Fondo", action: "changeBgColor", color: "linear-gradient(135deg, #84cc16, #65a30d)" },
+        { id: "btn-duplicate", icon: "fas fa-copy", title: "Duplicar", action: "duplicateEntity", color: "linear-gradient(135deg, #8b5cf6, #7c3aed)" },
+        { id: "btn-delete", icon: "fas fa-trash", title: "Eliminar", action: "deleteEntity", color: "linear-gradient(135deg, #ef4444, #dc2626)" }
+    ];
+
+    buttons.forEach(btn => {
+        const button = document.createElement("button");
+        button.id = btn.id;
+        button.innerHTML = `<i class="${btn.icon}"></i>`;
+        button.title = btn.title;
+        button.style.width = "40px";
+        button.style.height = "40px";
+        button.style.border = "none";
+        button.style.borderRadius = "12px"; // Botones más redondeados
+        button.style.background = btn.color;
+        button.style.color = "white";
+        button.style.cursor = "pointer";
+        button.style.display = "flex";
+        button.style.alignItems = "center";
+        button.style.justifyContent = "center";
+        button.style.fontSize = "14px";
+        button.style.transition = "all 0.2s cubic-bezier(0.4, 0, 0.2, 1)";
+        button.style.boxShadow = "0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06)";
+        button.style.position = "relative";
+        button.style.overflow = "hidden";
+        
+        // Efectos hover modernos
+        button.addEventListener("mouseenter", () => {
+            button.style.transform = "translateY(-2px) scale(1.05)";
+            button.style.boxShadow = "0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05)";
+        });
+        
+        button.addEventListener("mouseleave", () => {
+            button.style.transform = "translateY(0) scale(1)";
+            button.style.boxShadow = "0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06)";
+        });
+
+        // Efecto de click
+        button.addEventListener("mousedown", () => {
+            button.style.transform = "translateY(-1px) scale(0.98)";
+        });
+
+        button.addEventListener("mouseup", () => {
+            button.style.transform = "translateY(-2px) scale(1.05)";
+        });
+        
+        // Asignar acción
+        button.addEventListener("click", () => {
+            handleToolbarAction(btn.action);
+        });
+        
+        toolbar.appendChild(button);
+    });
+
+    // Efecto de entrada suave para el toolbar
+    toolbar.style.opacity = "0";
+    toolbar.style.transform = "translateY(-20px)";
+    
+    document.body.appendChild(toolbar);
+    
+    // Animación de entrada
+    setTimeout(() => {
+        toolbar.style.opacity = "1";
+        toolbar.style.transform = "translateY(0)";
+    }, 100);
+    
+    // Ocultar inicialmente
+    toolbar.style.display = "none";
+}
+
+// ===== Mostrar barra de herramientas =====
+function showToolbar() {
+    const toolbar = document.getElementById("globalToolbar");
+    if (toolbar) {
+        toolbar.style.display = "flex";
+    }
+}
+
+// ===== Ocultar barra de herramientas =====
+function hideToolbar() {
+    const toolbar = document.getElementById("globalToolbar");
+    if (toolbar) {
+        toolbar.style.display = "none";
+    }
+}
+
+// ===== Manejar acciones de la barra de herramientas =====
+function handleToolbarAction(action) {
+    const selectedEntity = document.querySelector(".selected-entity");
+    if (!selectedEntity) return;
+
+    switch(action) {
+        case "addField":
+            addFieldToEntity(selectedEntity);
+            break;
+        case "removeField":
+            removeFieldFromEntity(selectedEntity);
+            break;
+        case "addKey":
+            addKeyToEntity(selectedEntity);
+            break;
+        case "toggleBold":
+            toggleTextStyle(selectedEntity, "fontWeight", "bold", "normal");
+            break;
+        case "changeFontFamily":
+            changeFontFamily(selectedEntity);
+            break;
+        case "changeTextColor":
+            changeTextColor(selectedEntity);
+            break;
+        case "changeBgColor":
+            changeBgColor(selectedEntity);
+            break;
+        case "duplicateEntity":
+            duplicateEntity(selectedEntity);
+            break;
+        case "deleteEntity":
+            deleteEntity(selectedEntity);
+            break;
+    }
+}
+
+// ===== Funciones para manipular entidades (sin notificaciones) =====
+function toggleTextStyle(entity, styleProperty, value1, value2) {
+    const cells = entity.querySelectorAll("td, th");
+    cells.forEach(cell => {
+        const currentValue = cell.style[styleProperty];
+        cell.style[styleProperty] = currentValue === value1 ? value2 : value1;
+    });
+}
+
+function changeTextColor(entity) {
+    const colors = [
+        "#000000", // Negro
+        "#dc2626", // Rojo
+        "#059669", // Verde
+        "#2563eb", // Azul
+        "#7c3aed", // Púrpura
+        "#f59e0b", // Amarillo/Naranja
+        "#ec4899", // Rosa
+        "#06b6d4"  // Cian
+    ];
+    
+    const cells = entity.querySelectorAll("td, th");
+    
+    // Obtener el índice actual desde un atributo personalizado o empezar en 0
+    let currentIndex = parseInt(entity.getAttribute("data-color-index")) || 0;
+    
+    // Avanzar al siguiente color
+    currentIndex = (currentIndex + 1) % colors.length;
+    
+    // Guardar el índice actual
+    entity.setAttribute("data-color-index", currentIndex);
+    
+    // Aplicar el color a todas las celdas
+    cells.forEach(cell => {
+        cell.style.color = colors[currentIndex];
+    });
+}
+
+function changeBgColor(entity) {
+    const colors = [
+        "#f3f4f6", // Gris claro
+        "#fee2e2", // Rosa claro
+        "#dcfce7", // Verde claro
+        "#dbeafe", // Azul claro
+        "#fef3c7", // Amarillo claro
+        "#e9d5ff", // Púrpura claro
+        "#fce7f3", // Magenta claro
+        "#cffafe"  // Cian claro
+    ];
+    
+    const header = entity.querySelector("th");
+    
+    // Obtener el índice actual desde un atributo personalizado o empezar en 0
+    let currentIndex = parseInt(entity.getAttribute("data-bg-index")) || 0;
+    
+    // Avanzar al siguiente color
+    currentIndex = (currentIndex + 1) % colors.length;
+    
+    // Guardar el índice actual
+    entity.setAttribute("data-bg-index", currentIndex);
+    
+    // Aplicar el color de fondo al header
+    header.style.backgroundColor = colors[currentIndex];
+}
+
+function changeFontFamily(entity) {
+    const fonts = [
+        "Arial, sans-serif",
+        "Georgia, serif", 
+        "'Courier New', monospace",
+        "'Helvetica', sans-serif",
+        "'Times New Roman', serif",
+        "'Verdana', sans-serif",
+        "'Comic Sans MS', cursive",
+        "'Trebuchet MS', sans-serif"
+    ];
+    
+    const cells = entity.querySelectorAll("td, th");
+    
+    // Obtener el índice actual desde un atributo personalizado o empezar en 0
+    let currentIndex = parseInt(entity.getAttribute("data-font-index")) || 0;
+    
+    // Avanzar a la siguiente fuente
+    currentIndex = (currentIndex + 1) % fonts.length;
+    
+    // Guardar el índice actual
+    entity.setAttribute("data-font-index", currentIndex);
+    
+    // Aplicar la fuente a todas las celdas
+    cells.forEach(cell => {
+        cell.style.fontFamily = fonts[currentIndex];
+    });
+}
+
+function duplicateEntity(entity) {
+    const clone = entity.cloneNode(true);
+    clone.style.left = (parseInt(entity.style.left) + 20) + "px";
+    clone.style.top = (parseInt(entity.style.top) + 20) + "px";
+    clone.classList.remove("selected-entity");
+    
+    entity.parentNode.appendChild(clone);
+    makeEntityDraggable(clone);
+}
+
+function deleteEntity(entity) {
+    if (confirm("¿Estás seguro de eliminar esta entidad?")) {
+        entity.remove();
+        
+        // Ocultar toolbar si no hay más entidades
+        const entities = document.querySelectorAll(".er-element");
+        if (entities.length === 0) {
+            hideToolbar();
+        }
+    }
+}
+
 // ===== Hacer entidades arrastrables =====
 function makeEntityDraggable(entity) {
     let offsetX = 0, offsetY = 0, isDragging = false;
 
     entity.addEventListener("mousedown", (e) => {
         isDragging = true;
+        // Remover selección previa
+        document.querySelectorAll(".selected-entity").forEach(el => {
+            el.classList.remove("selected-entity");
+            el.style.boxShadow = "none";
+        });
+        
         entity.classList.add("selected-entity");
         offsetX = e.clientX - entity.offsetLeft;
         offsetY = e.clientY - entity.offsetTop;
         entity.style.zIndex = "1000";
+        
+        // Efecto visual de selección
+        entity.style.boxShadow = "0 0 0 2px #3b82f6";
     });
 
     document.addEventListener("mousemove", (e) => {
@@ -1661,147 +1939,208 @@ function makeEntityDraggable(entity) {
     });
 
     document.addEventListener("click", (e) => {
-        if (!entity.contains(e.target)) {
+        if (!entity.contains(e.target) && !e.target.closest("#globalToolbar")) {
             entity.classList.remove("selected-entity");
+            entity.style.boxShadow = "none";
         }
     });
 }
 
-// Eliminar entidad con tecla Delete
-document.addEventListener("keydown", (e) => {
-    if ((e.key === "Delete" || e.key === "Backspace")) {
-        const selected = document.querySelector(".selected-entity");
-        if (selected) {
-            e.preventDefault(); // 👈 así no se mezcla con conexiones
-            selected.remove();
+// ===== Funciones existentes que deben mantenerse =====
+function addFieldToEntity(entity) {
+    const table = entity.querySelector("table");
+    const tbody = table.querySelector("tbody");
+    const firstRow = tbody.querySelector("tr");
+    
+    if (!firstRow) return;
+    
+    const colCount = firstRow.cells.length;
+    const newRow = document.createElement("tr");
+    
+    for (let i = 0; i < colCount; i++) {
+        const cell = document.createElement("td");
+        cell.style.border = "1px solid #111";
+        cell.style.padding = "2px 4px";
+        cell.style.textAlign = "left";
+        cell.style.fontSize = "11px";
+        cell.contentEditable = "true";
+        
+        if (i === 0 && colCount > 1) {
+            cell.textContent = "Field";
+        } else if (i === 1 && colCount === 3) {
+            cell.textContent = "Type";
+        } else {
+            cell.textContent = "Value";
         }
+        
+        newRow.appendChild(cell);
     }
-});
+    
+    tbody.appendChild(newRow);
+}
 
+function removeFieldFromEntity(entity) {
+    const table = entity.querySelector("table");
+    const tbody = table.querySelector("tbody");
+    const rows = tbody.querySelectorAll("tr");
+    
+    if (rows.length > 1) {
+        tbody.removeChild(rows[rows.length - 1]);
+    }
+}
 
-// Normaliza el tipo que viene del data-entity
+function addKeyToEntity(entity) {
+    const table = entity.querySelector("table");
+    const header = table.querySelector("th");
+    const tbody = table.querySelector("tbody");
+    const rows = tbody.querySelectorAll("tr");
+    
+    const firstRow = rows[0];
+    const hasKey = firstRow.querySelector(".fa-key") !== null;
+    
+    if (hasKey) return;
+    
+    const currentColspan = parseInt(header.getAttribute("colspan") || 1);
+    header.setAttribute("colspan", currentColspan + 1);
+    
+    rows.forEach(row => {
+        const keyCell = document.createElement("td");
+        keyCell.style.border = "1px solid #111";
+        keyCell.style.padding = "2px 4px";
+        keyCell.style.textAlign = "left";
+        keyCell.style.fontSize = "11px";
+        
+        if (row === rows[0]) {
+            keyCell.innerHTML = '<i class="fas fa-key" style="color: #f59e0b; font-size: 10px;"></i>';
+            keyCell.contentEditable = "false";
+        } else {
+            keyCell.contentEditable = "true";
+            keyCell.textContent = "Key";
+        }
+        
+        row.insertBefore(keyCell, row.firstChild);
+    });
+}
+
+// ===== Normaliza el tipo que viene del data-entity =====
 function normalizeType(raw) {
-  const s = String(raw || "")
-    .toLowerCase()
-    .normalize("NFD").replace(/\p{Diacritic}/gu, "") // quita acentos
-    .trim()
-    .replace(/\s+/g, "-"); // espacios -> guiones
+    const s = String(raw || "")
+        .toLowerCase()
+        .normalize("NFD").replace(/\p{Diacritic}/gu, "")
+        .trim()
+        .replace(/\s+/g, "-");
 
-  if (s.includes("simple")) return "simple";
-  if (s.includes("llave") || s.includes("llaves")) return "con-llaves";
-  if (s.includes("tipo") || s.includes("tipos")) return "con-tipos";
-  if (s.includes("completa")) return "completa";
-  return "simple"; // fallback
+    if (s.includes("simple")) return "simple";
+    if (s.includes("llave") || s.includes("llaves")) return "con-llaves";
+    if (s.includes("tipo") || s.includes("tipos")) return "con-tipos";
+    if (s.includes("completa")) return "completa";
+    return "simple";
 }
 
 function addEntityToWorkspace(type) {
-  const kind = normalizeType(type);
+    const kind = normalizeType(type);
+    const entity = document.createElement("div");
+    entity.className = "er-element";
+    entity.style.position = "absolute";
+    entity.style.left = "50px";
+    entity.style.top = "50px";
+    entity.style.fontSize = "11px";
+    entity.style.minWidth = "120px";
+    entity.style.display = "inline-block";
+    entity.style.background = "transparent";
+    entity.style.padding = "0";
+    entity.style.margin = "0";
+    entity.style.boxShadow = "none";
+    entity.style.textAlign = "center";
 
-  const entity = document.createElement("div");
-  entity.className = "er-element";
-  entity.style.position = "absolute";
-  entity.style.left = "50px";
-  entity.style.top = "50px";
-  entity.style.fontSize = "11px";
-  entity.style.minWidth = "120px";
-  entity.style.display = "inline-block";
-  entity.style.background = "transparent";
-  entity.style.padding = "0";
-  entity.style.margin = "0";
-  entity.style.boxShadow = "none";
-  entity.style.textAlign = "center"; // centrado del botón
+    const table = document.createElement("table");
+    table.style.width = "auto";
+    table.style.borderCollapse = "collapse";
+    table.style.tableLayout = "auto";
+    table.style.userSelect = "none";
 
-  // ==== Tabla editable ====
-  const table = document.createElement("table");
-  table.style.width = "auto";
-  table.style.borderCollapse = "collapse";
-  table.style.tableLayout = "auto";
-  table.style.userSelect = "none"; 
+    const thStyle = "border:1px solid #111;padding:2px 4px;background:#f3f4f6;font-weight:700;text-align:center;font-size:11px;";
+    const tdStyle = "border:1px solid #111;padding:2px 4px;text-align:left;font-size:11px;";
 
-  const thStyle = "border:1px solid #111;padding:2px 4px;background:#f3f4f6;font-weight:700;text-align:center;font-size:11px;";
-  const tdStyle = "border:1px solid #111;padding:2px 4px;text-align:left;font-size:11px;";
+    const cols = (kind === "simple") ? 1 : (kind === "completa" ? 3 : 2);
 
-  const cols = (kind === "simple") ? 1 : (kind === "completa" ? 3 : 2);
+    let html = `<thead><tr><th colspan="${cols}" style="${thStyle}" contenteditable="true">Entity</th></tr></thead><tbody>`;
 
-  // encabezado editable
-  let html = `<thead><tr><th colspan="${cols}" style="${thStyle}" contenteditable="true">Entity</th></tr></thead><tbody>`;
+    const makeRows = (cells, n = 3) => {
+        let out = "";
+        for (let i = 0; i < n; i++) {
+            out += "<tr>" + cells.map(c => `<td style="${tdStyle}" contenteditable="true">${c}</td>`).join("") + "</tr>";
+        }
+        return out;
+    };
 
-  // helper para crear filas con celdas editables
-  const makeRows = (cells, n = 3) => {
-    let out = "";
-    for (let i = 0; i < n; i++) {
-      out += "<tr>" + cells.map(c => `<td style="${tdStyle}" contenteditable="true">${c}</td>`).join("") + "</tr>";
-    }
-    return out;
-  };
-
-  if (kind === "simple") {
-    html += makeRows(["Field"], 3);
-  } else if (kind === "con-llaves") {
-    html += makeRows(["Key", "Field"], 3);
-  } else if (kind === "con-tipos") {
-    html += makeRows(["Field", "Type"], 3);
-  } else if (kind === "completa") {
-    html += makeRows(["Key", "Field", "Type"], 3);
-  }
-
-  html += "</tbody>";
-  table.innerHTML = html;
-  entity.appendChild(table);
-
-  // ==== Botón "+" para agregar filas ====
-  const addRowBtn = document.createElement("button");
-  addRowBtn.innerText = "+";
-  addRowBtn.style.marginTop = "4px";
-  addRowBtn.style.padding = "2px 6px";
-  addRowBtn.style.border = "1px solid #111";
-  addRowBtn.style.borderRadius = "4px";
-  addRowBtn.style.cursor = "pointer";
-  addRowBtn.style.fontSize = "12px";
-  addRowBtn.style.background = "#f3f4f6";
-
-  // Acción: agregar nueva fila editable
-  addRowBtn.addEventListener("click", () => {
-    const newRow = document.createElement("tr");
     if (kind === "simple") {
-      newRow.innerHTML = `<td style="${tdStyle}" contenteditable="true">Field</td>`;
+        html += makeRows(["Field"], 3);
     } else if (kind === "con-llaves") {
-      newRow.innerHTML = `<td style="${tdStyle}" contenteditable="true">Key</td>
-                          <td style="${tdStyle}" contenteditable="true">Field</td>`;
+        html += makeRows(["Key", "Field"], 3);
     } else if (kind === "con-tipos") {
-      newRow.innerHTML = `<td style="${tdStyle}" contenteditable="true">Field</td>
-                          <td style="${tdStyle}" contenteditable="true">Type</td>`;
+        html += makeRows(["Field", "Type"], 3);
     } else if (kind === "completa") {
-      newRow.innerHTML = `<td style="${tdStyle}" contenteditable="true">Key</td>
-                          <td style="${tdStyle}" contenteditable="true">Field</td>
-                          <td style="${tdStyle}" contenteditable="true">Type</td>`;
+        html += makeRows(["Key", "Field", "Type"], 3);
     }
-    table.querySelector("tbody").appendChild(newRow);
-  });
 
-  entity.appendChild(addRowBtn);
-  
+    html += "</tbody>";
+    table.innerHTML = html;
+    entity.appendChild(table);
 
-  return entity;
+    const addRowBtn = document.createElement("button");
+    addRowBtn.innerText = "+";
+    addRowBtn.style.marginTop = "4px";
+    addRowBtn.style.padding = "2px 6px";
+    addRowBtn.style.border = "1px solid #111";
+    addRowBtn.style.borderRadius = "4px";
+    addRowBtn.style.cursor = "pointer";
+    addRowBtn.style.fontSize = "12px";
+    addRowBtn.style.background = "#f3f4f6";
+
+    addRowBtn.addEventListener("click", () => {
+        const newRow = document.createElement("tr");
+        if (kind === "simple") {
+            newRow.innerHTML = `<td style="${tdStyle}" contenteditable="true">Field</td>`;
+        } else if (kind === "con-llaves") {
+            newRow.innerHTML = `<td style="${tdStyle}" contenteditable="true">Key</td>
+                                <td style="${tdStyle}" contenteditable="true">Field</td>`;
+        } else if (kind === "con-tipos") {
+            newRow.innerHTML = `<td style="${tdStyle}" contenteditable="true">Field</td>
+                                <td style="${tdStyle}" contenteditable="true">Type</td>`;
+        } else if (kind === "completa") {
+            newRow.innerHTML = `<td style="${tdStyle}" contenteditable="true">Key</td>
+                                <td style="${tdStyle}" contenteditable="true">Field</td>
+                                <td style="${tdStyle}" contenteditable="true">Type</td>`;
+        }
+        table.querySelector("tbody").appendChild(newRow);
+    });
+
+    entity.appendChild(addRowBtn);
+    
+    // Mostrar toolbar cuando se crea la primera entidad
+    const entities = document.querySelectorAll(".er-element");
+    if (entities.length === 0) {
+        createGlobalToolbar();
+        showToolbar();
+    }
+    
+    return entity;
 }
-
 
 // ===== Escuchar clics del menú =====
 document.addEventListener("DOMContentLoaded", () => {
     document.addEventListener("click", (e) => {
         const option = e.target.closest(".entity-option");
         if (!option) return;
-
         const entityType = option.dataset.entity;
 
-        // 🔹 Si es conexión -> crear relación 1:N
         if (entityType === "conexion-uno-muchos") {
             const workspace = document.getElementById("workspaceArea") || createWorkspaceArea();
             addConnectionToWorkspace();
-            return; // 👈 importante: detener aquí, así NO crea duplicados
+            return;
         }
 
-        // 🔹 Si es entidad -> crear entidad
         const workspace = createWorkspaceArea();
         const newEntity = addEntityToWorkspace(entityType);
         if (newEntity) {
@@ -1810,12 +2149,12 @@ document.addEventListener("DOMContentLoaded", () => {
         }
     });
 });
-
 </script>
 <script>
 // ====== SCRIPT DE CONEXIONES 1:N ======
 let connectionCounter = 0;
 let selectedConnection = null;
+let allConnections = []; 
 
 function addConnectionToWorkspace() {
     const workspace = document.getElementById("workspaceArea");
@@ -1823,29 +2162,26 @@ function addConnectionToWorkspace() {
 
     const svg = getOrCreateSVG(workspace);
 
-    // Crear línea
     const line = document.createElementNS("http://www.w3.org/2000/svg", "line");
     line.setAttribute("stroke", "#333");
     line.setAttribute("stroke-width", "2");
     line.id = `connection-${++connectionCounter}`;
     svg.appendChild(line);
 
-    // Crear etiquetas "1" y "N"
     const label1 = createLabel("1");
     const labelN = createLabel("N");
     workspace.appendChild(label1);
     workspace.appendChild(labelN);
 
-    // Posiciones iniciales (más cómodas)
     let x1 = 150, y1 = 150, x2 = 280, y2 = 180;
     updateLine(line, label1, labelN, x1, y1, x2, y2);
 
-    // Guardar conexión
-    const conn = { line, label1, labelN, x1, y1, x2, y2 };
+    const conn = { line, label1, labelN, x1, y1, x2, y2, table1: null, tableN: null };
+    allConnections.push(conn);
+
     makeConnectionDraggable(conn);
 }
 
-// Crear o reutilizar el SVG
 function getOrCreateSVG(workspace) {
     let svg = workspace.querySelector("svg.connections-layer");
     if (!svg) {
@@ -1861,7 +2197,6 @@ function getOrCreateSVG(workspace) {
     return svg;
 }
 
-// Crear etiqueta (1 o N)
 function createLabel(text) {
     const lbl = document.createElement("div");
     lbl.innerText = text;
@@ -1875,7 +2210,6 @@ function createLabel(text) {
     return lbl;
 }
 
-// Actualizar línea y posiciones de etiquetas
 function updateLine(line, lbl1, lblN, x1, y1, x2, y2) {
     line.setAttribute("x1", x1);
     line.setAttribute("y1", y1);
@@ -1889,30 +2223,95 @@ function updateLine(line, lbl1, lblN, x1, y1, x2, y2) {
     lblN.style.top = (y2 - 20) + "px";
 }
 
-// Hacer extremos arrastrables (fluido con clientX/clientY)
+// Enganchar al borde más lógico (cara que mira a la otra tabla)
+function snapToTable(x, y, otherX, otherY) {
+    const workspace = document.getElementById("workspaceArea");
+    const tables = workspace.querySelectorAll(".er-element table");
+    const wsRect = workspace.getBoundingClientRect();
+
+    for (let tbl of tables) {
+        const rect = tbl.getBoundingClientRect();
+        const left = rect.left - wsRect.left;
+        const top = rect.top - wsRect.top;
+        const right = left + rect.width;
+        const bottom = top + rect.height;
+        const cx = (left + right) / 2;
+        const cy = (top + bottom) / 2;
+
+        const margin = 20;
+        const hitbox = {
+            left: left - margin,
+            top: top - margin,
+            right: right + margin,
+            bottom: bottom + margin
+        };
+
+        if (x >= hitbox.left && x <= hitbox.right && y >= hitbox.top && y <= hitbox.bottom) {
+            // calcular desde qué lado enganchar según dónde está el otro extremo
+            const dx = otherX - cx;
+            const dy = otherY - cy;
+
+            let snapX, snapY;
+            if (Math.abs(dx) > Math.abs(dy)) {
+                if (dx < 0) { // otro a la izquierda
+                    snapX = left;
+                    snapY = cy;
+                } else { // otro a la derecha
+                    snapX = right;
+                    snapY = cy;
+                }
+            } else {
+                if (dy < 0) { // otro arriba
+                    snapX = cx;
+                    snapY = top;
+                } else { // otro abajo
+                    snapX = cx;
+                    snapY = bottom;
+                }
+            }
+            return { tbl: tbl.closest(".er-element"), x: snapX, y: snapY };
+        }
+    }
+
+    return null;
+}
+
 function makeConnectionDraggable(conn) {
     const { line, label1, labelN } = conn;
     let dragging = null;
 
     function startDrag(e, point) {
         dragging = point;
-        selectedConnection = conn; // marcar como seleccionada
+        selectedConnection = conn;
         highlightConnection(conn, true);
         e.preventDefault();
     }
 
     function drag(e) {
         if (!dragging) return;
-
         const workspace = document.getElementById("workspaceArea");
         const rect = workspace.getBoundingClientRect();
 
+        let x = e.clientX - rect.left;
+        let y = e.clientY - rect.top;
+
+        let otherX = dragging === "1" ? conn.x2 : conn.x1;
+        let otherY = dragging === "1" ? conn.y2 : conn.y1;
+
+        const snap = snapToTable(x, y, otherX, otherY);
+        if (snap) {
+            x = snap.x;
+            y = snap.y;
+            if (dragging === "1") conn.table1 = snap.tbl;
+            if (dragging === "N") conn.tableN = snap.tbl;
+        }
+
         if (dragging === "1") {
-            conn.x1 = e.clientX - rect.left;
-            conn.y1 = e.clientY - rect.top;
+            conn.x1 = x;
+            conn.y1 = y;
         } else if (dragging === "N") {
-            conn.x2 = e.clientX - rect.left;
-            conn.y2 = e.clientY - rect.top;
+            conn.x2 = x;
+            conn.y2 = y;
         }
 
         updateLine(line, label1, labelN, conn.x1, conn.y1, conn.x2, conn.y2);
@@ -1927,31 +2326,529 @@ function makeConnectionDraggable(conn) {
     document.addEventListener("mousemove", drag);
     document.addEventListener("mouseup", stopDrag);
 
-    // Selección con clic en la línea
     line.addEventListener("click", () => {
         selectedConnection = conn;
         highlightConnection(conn, true);
     });
 }
 
-// Resaltar conexión seleccionada
 function highlightConnection(conn, active) {
     conn.line.setAttribute("stroke", active ? "red" : "#333");
 }
 
-// Eliminar conexión con tecla Delete
 document.addEventListener("keydown", (e) => {
     if ((e.key === "Delete" || e.key === "Backspace") && selectedConnection) {
-        e.preventDefault(); // 👈 evita que se siga propagando a entidades
+        e.preventDefault();
         selectedConnection.line.remove();
         selectedConnection.label1.remove();
         selectedConnection.labelN.remove();
+        allConnections = allConnections.filter(c => c !== selectedConnection);
         selectedConnection = null;
     }
 });
 
-</script>
+function refreshConnections() {
+    const workspace = document.getElementById("workspaceArea");
+    const wsRect = workspace.getBoundingClientRect();
 
+    allConnections.forEach(conn => {
+        if (conn.table1 && conn.tableN) {
+            const rect1 = conn.table1.querySelector("table").getBoundingClientRect();
+            const rect2 = conn.tableN.querySelector("table").getBoundingClientRect();
+
+            const cx1 = rect1.left - wsRect.left + rect1.width / 2;
+            const cy1 = rect1.top - wsRect.top + rect1.height / 2;
+            const cx2 = rect2.left - wsRect.left + rect2.width / 2;
+            const cy2 = rect2.top - wsRect.top + rect2.height / 2;
+
+            // calcular caras opuestas
+            if (Math.abs(cx1 - cx2) > Math.abs(cy1 - cy2)) {
+                // izquierda / derecha
+                conn.x1 = (cx1 < cx2) ? rect1.right - wsRect.left : rect1.left - wsRect.left;
+                conn.y1 = cy1;
+                conn.x2 = (cx2 < cx1) ? rect2.right - wsRect.left : rect2.left - wsRect.left;
+                conn.y2 = cy2;
+            } else {
+                // arriba / abajo
+                conn.x1 = cx1;
+                conn.y1 = (cy1 < cy2) ? rect1.bottom - wsRect.top : rect1.top - wsRect.top;
+                conn.x2 = cx2;
+                conn.y2 = (cy2 < cy1) ? rect2.bottom - wsRect.top : rect2.top - wsRect.top;
+            }
+        }
+        updateLine(conn.line, conn.label1, conn.labelN, conn.x1, conn.y1, conn.x2, conn.y2);
+    });
+}
+
+document.addEventListener("mousemove", () => {
+    refreshConnections();
+});
+</script>
+<script>
+    // ===== SCRIPT DE EXPORTACIÓN DE IMÁGENES =====
+
+/**
+ * Exporta el área de trabajo como imagen PNG
+ */
+function exportWorkspaceAsPNG() {
+    const workspace = document.getElementById('workspaceArea');
+    
+    if (!workspace) {
+        showNotification('No se encontró el área de trabajo', 'error');
+        return;
+    }
+
+    // Verificar si hay contenido para exportar
+    const entities = workspace.querySelectorAll('.er-element');
+    const connections = workspace.querySelectorAll('.connections-layer line');
+    
+    if (entities.length === 0 && connections.length === 0) {
+        showNotification('No hay contenido para exportar', 'warning');
+        return;
+    }
+
+    // Mostrar indicador de carga
+    showExportLoader('Generando imagen PNG...');
+
+    // Usar html2canvas para capturar el workspace
+    html2canvas(workspace, {
+        backgroundColor: '#ffffff',
+        scale: 2, // Mayor calidad
+        useCORS: true,
+        allowTaint: true,
+        scrollX: 0,
+        scrollY: 0,
+        width: workspace.offsetWidth,
+        height: workspace.offsetHeight,
+        ignoreElements: (element) => {
+            // Ignorar elementos que no queremos en la exportación
+            return element.classList.contains('connection-label') && 
+                   element.style.display === 'none';
+        }
+    }).then(canvas => {
+        // Crear y descargar la imagen
+        const link = document.createElement('a');
+        const timestamp = new Date().toISOString().slice(0, 19).replace(/[:-]/g, '');
+        
+        link.download = `graphus_diagram_${timestamp}.png`;
+        link.href = canvas.toDataURL('image/png');
+        
+        // Simular click para descargar
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        
+        hideExportLoader();
+        showNotification('Imagen PNG descargada exitosamente', 'success');
+        
+    }).catch(error => {
+        console.error('Error al exportar:', error);
+        hideExportLoader();
+        showNotification('Error al generar la imagen PNG', 'error');
+    });
+}
+
+/**
+ * Exporta el área de trabajo como imagen JPG
+ */
+function exportWorkspaceAsJPG() {
+    const workspace = document.getElementById('workspaceArea');
+    
+    if (!workspace) {
+        showNotification('No se encontró el área de trabajo', 'error');
+        return;
+    }
+
+    const entities = workspace.querySelectorAll('.er-element');
+    const connections = workspace.querySelectorAll('.connections-layer line');
+    
+    if (entities.length === 0 && connections.length === 0) {
+        showNotification('No hay contenido para exportar', 'warning');
+        return;
+    }
+
+    showExportLoader('Generando imagen JPG...');
+
+    html2canvas(workspace, {
+        backgroundColor: '#ffffff',
+        scale: 2,
+        useCORS: true,
+        allowTaint: true,
+        scrollX: 0,
+        scrollY: 0,
+        width: workspace.offsetWidth,
+        height: workspace.offsetHeight
+    }).then(canvas => {
+        const link = document.createElement('a');
+        const timestamp = new Date().toISOString().slice(0, 19).replace(/[:-]/g, '');
+        
+        link.download = `graphus_diagram_${timestamp}.jpg`;
+        link.href = canvas.toDataURL('image/jpeg', 0.9);
+        
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        
+        hideExportLoader();
+        showNotification('Imagen JPG descargada exitosamente', 'success');
+        
+    }).catch(error => {
+        console.error('Error al exportar:', error);
+        hideExportLoader();
+        showNotification('Error al generar la imagen JPG', 'error');
+    });
+}
+
+/**
+ * Exporta el área de trabajo como SVG
+ */
+function exportWorkspaceAsSVG() {
+    const workspace = document.getElementById('workspaceArea');
+    
+    if (!workspace) {
+        showNotification('No se encontró el área de trabajo', 'error');
+        return;
+    }
+
+    const entities = workspace.querySelectorAll('.er-element');
+    const connections = workspace.querySelectorAll('.connections-layer line');
+    
+    if (entities.length === 0 && connections.length === 0) {
+        showNotification('No hay contenido para exportar', 'warning');
+        return;
+    }
+
+    showExportLoader('Generando imagen SVG...');
+
+    try {
+        // Crear SVG manualmente
+        const svgContent = generateSVGContent(workspace, entities, connections);
+        
+        // Crear blob y descargar
+        const blob = new Blob([svgContent], { type: 'image/svg+xml' });
+        const url = URL.createObjectURL(blob);
+        
+        const link = document.createElement('a');
+        const timestamp = new Date().toISOString().slice(0, 19).replace(/[:-]/g, '');
+        
+        link.download = `graphus_diagram_${timestamp}.svg`;
+        link.href = url;
+        
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        
+        URL.revokeObjectURL(url);
+        hideExportLoader();
+        showNotification('Imagen SVG descargada exitosamente', 'success');
+        
+    } catch (error) {
+        console.error('Error al exportar SVG:', error);
+        hideExportLoader();
+        showNotification('Error al generar la imagen SVG', 'error');
+    }
+}
+
+/**
+ * Genera el contenido SVG del workspace
+ */
+function generateSVGContent(workspace, entities, connections) {
+    const width = workspace.offsetWidth;
+    const height = workspace.offsetHeight;
+    
+    let svgContent = `<?xml version="1.0" encoding="UTF-8"?>
+<svg width="${width}" height="${height}" xmlns="http://www.w3.org/2000/svg">
+    <rect width="100%" height="100%" fill="white"/>
+    
+    <!-- Grid Pattern -->
+    <defs>
+        <pattern id="grid" width="20" height="20" patternUnits="userSpaceOnUse">
+            <path d="M 20 0 L 0 0 0 20" fill="none" stroke="#e5e7eb" stroke-width="0.5"/>
+        </pattern>
+    </defs>
+    <rect width="100%" height="100%" fill="url(#grid)"/>
+`;
+
+    // Agregar conexiones
+    connections.forEach(connection => {
+        const x1 = connection.getAttribute('x1');
+        const y1 = connection.getAttribute('y1');
+        const x2 = connection.getAttribute('x2');
+        const y2 = connection.getAttribute('y2');
+        const stroke = connection.getAttribute('stroke') || '#333';
+        const strokeWidth = connection.getAttribute('stroke-width') || '2';
+        
+        svgContent += `    <line x1="${x1}" y1="${y1}" x2="${x2}" y2="${y2}" stroke="${stroke}" stroke-width="${strokeWidth}"/>
+`;
+    });
+
+    // Agregar entidades (convertidas a texto)
+    entities.forEach(entity => {
+        const rect = entity.getBoundingClientRect();
+        const workspaceRect = workspace.getBoundingClientRect();
+        
+        const x = rect.left - workspaceRect.left;
+        const y = rect.top - workspaceRect.top;
+        
+        const table = entity.querySelector('table');
+        if (table) {
+            svgContent += convertTableToSVG(table, x, y);
+        }
+    });
+
+    svgContent += '</svg>';
+    return svgContent;
+}
+
+/**
+ * Convierte una tabla HTML a elementos SVG
+ */
+function convertTableToSVG(table, offsetX, offsetY) {
+    const rows = table.querySelectorAll('tr');
+    let svg = '';
+    let currentY = offsetY;
+    
+    rows.forEach((row, rowIndex) => {
+        const cells = row.querySelectorAll('th, td');
+        let currentX = offsetX;
+        const cellHeight = 25;
+        
+        cells.forEach((cell, cellIndex) => {
+            const cellWidth = 100; // Ancho fijo para simplicidad
+            const text = cell.textContent.trim();
+            const isHeader = cell.tagName === 'TH';
+            
+            // Rectángulo de la celda
+            svg += `    <rect x="${currentX}" y="${currentY}" width="${cellWidth}" height="${cellHeight}" 
+                       fill="${isHeader ? '#f3f4f6' : 'white'}" stroke="#111" stroke-width="1"/>
+`;
+            
+            // Texto de la celda
+            svg += `    <text x="${currentX + cellWidth/2}" y="${currentY + cellHeight/2 + 4}" 
+                       text-anchor="middle" font-family="Arial" font-size="11" 
+                       ${isHeader ? 'font-weight="bold"' : ''} fill="#000">${text}</text>
+`;
+            
+            currentX += cellWidth;
+        });
+        
+        currentY += cellHeight;
+    });
+    
+    return svg;
+}
+
+/**
+ * Muestra el loader de exportación
+ */
+function showExportLoader(message) {
+    // Remover loader existente
+    const existingLoader = document.getElementById('exportLoader');
+    if (existingLoader) {
+        existingLoader.remove();
+    }
+
+    const loader = document.createElement('div');
+    loader.id = 'exportLoader';
+    loader.className = 'fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-[9999]';
+    loader.innerHTML = `
+        <div class="bg-white rounded-xl p-6 shadow-2xl max-w-sm mx-4">
+            <div class="flex items-center space-x-3">
+                <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-indigo-600"></div>
+                <div>
+                    <div class="font-semibold text-gray-900">Exportando...</div>
+                    <div class="text-sm text-gray-600">${message}</div>
+                </div>
+            </div>
+        </div>
+    `;
+    
+    document.body.appendChild(loader);
+}
+
+/**
+ * Oculta el loader de exportación
+ */
+function hideExportLoader() {
+    const loader = document.getElementById('exportLoader');
+    if (loader) {
+        loader.remove();
+    }
+}
+
+/**
+ * Inicializa los event listeners para la exportación
+ */
+function initializeExportListeners() {
+    // Esperar a que el DOM esté listo
+    document.addEventListener('DOMContentLoaded', function() {
+        addExportEventListeners();
+    });
+    
+    // Si el DOM ya está listo, ejecutar inmediatamente
+    if (document.readyState !== 'loading') {
+        addExportEventListeners();
+    }
+}
+
+/**
+ * Agrega los event listeners a los botones de exportación
+ */
+function addExportEventListeners() {
+    // Usar delegación de eventos para manejar contenido dinámico
+    document.addEventListener('click', function(e) {
+        // Verificar si el click fue en el contenedor de exportación de imagen
+        const exportImageContainer = e.target.closest('.p-3.border.border-gray-200.rounded-lg');
+        
+        if (exportImageContainer) {
+            const iconElement = exportImageContainer.querySelector('.fa-image');
+            const titleElement = exportImageContainer.querySelector('.font-medium');
+            
+            // Verificar si es el botón de exportar imagen
+            if (iconElement && titleElement && titleElement.textContent.includes('Exportar como Imagen')) {
+                e.preventDefault();
+                showImageExportModal();
+                return;
+            }
+        }
+    });
+}
+
+/**
+ * Muestra el modal de selección de formato de imagen
+ */
+function showImageExportModal() {
+    // Remover modal existente
+    const existingModal = document.getElementById('imageExportModal');
+    if (existingModal) {
+        existingModal.remove();
+    }
+
+    const modal = document.createElement('div');
+    modal.id = 'imageExportModal';
+    modal.className = 'fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-[9999]';
+    modal.innerHTML = `
+        <div class="bg-white rounded-2xl p-6 shadow-2xl max-w-md mx-4 transform scale-100">
+            <div class="text-center mb-6">
+                <div class="w-16 h-16 bg-gradient-to-br from-blue-500 to-cyan-600 rounded-full flex items-center justify-center mx-auto mb-4">
+                    <i class="fas fa-image text-white text-2xl"></i>
+                </div>
+                <h3 class="text-xl font-bold text-gray-900 mb-2">Exportar como Imagen</h3>
+                <p class="text-gray-600">Selecciona el formato de imagen que deseas descargar</p>
+            </div>
+            
+            <div class="space-y-3 mb-6">
+                <button onclick="exportWorkspaceAsPNG(); closeImageExportModal();" 
+                        class="w-full p-4 border-2 border-gray-200 rounded-xl hover:border-blue-500 hover:bg-blue-50 transition-all duration-200 text-left group">
+                    <div class="flex items-center space-x-3">
+                        <div class="w-10 h-10 bg-gradient-to-br from-green-500 to-emerald-600 rounded-lg flex items-center justify-center">
+                            <span class="text-white font-bold text-sm">PNG</span>
+                        </div>
+                        <div class="flex-1">
+                            <div class="font-semibold text-gray-900">Formato PNG</div>
+                            <div class="text-sm text-gray-500">Mejor calidad, fondo transparente</div>
+                        </div>
+                        <i class="fas fa-download text-gray-400 group-hover:text-blue-500"></i>
+                    </div>
+                </button>
+                
+                <button onclick="exportWorkspaceAsJPG(); closeImageExportModal();" 
+                        class="w-full p-4 border-2 border-gray-200 rounded-xl hover:border-blue-500 hover:bg-blue-50 transition-all duration-200 text-left group">
+                    <div class="flex items-center space-x-3">
+                        <div class="w-10 h-10 bg-gradient-to-br from-orange-500 to-red-600 rounded-lg flex items-center justify-center">
+                            <span class="text-white font-bold text-sm">JPG</span>
+                        </div>
+                        <div class="flex-1">
+                            <div class="font-semibold text-gray-900">Formato JPG</div>
+                            <div class="text-sm text-gray-500">Menor tamaño, fondo blanco</div>
+                        </div>
+                        <i class="fas fa-download text-gray-400 group-hover:text-blue-500"></i>
+                    </div>
+                </button>
+                
+                <button onclick="exportWorkspaceAsSVG(); closeImageExportModal();" 
+                        class="w-full p-4 border-2 border-gray-200 rounded-xl hover:border-blue-500 hover:bg-blue-50 transition-all duration-200 text-left group">
+                    <div class="flex items-center space-x-3">
+                        <div class="w-10 h-10 bg-gradient-to-br from-purple-500 to-violet-600 rounded-lg flex items-center justify-center">
+                            <span class="text-white font-bold text-sm">SVG</span>
+                        </div>
+                        <div class="flex-1">
+                            <div class="font-semibold text-gray-900">Formato SVG</div>
+                            <div class="text-sm text-gray-500">Vector escalable, editable</div>
+                        </div>
+                        <i class="fas fa-download text-gray-400 group-hover:text-blue-500"></i>
+                    </div>
+                </button>
+            </div>
+            
+            <div class="flex space-x-3">
+                <button onclick="closeImageExportModal();" 
+                        class="flex-1 px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors">
+                    Cancelar
+                </button>
+            </div>
+        </div>
+    `;
+    
+    document.body.appendChild(modal);
+    
+    // Cerrar modal al hacer clic fuera
+    modal.addEventListener('click', function(e) {
+        if (e.target === modal) {
+            closeImageExportModal();
+        }
+    });
+}
+
+/**
+ * Cierra el modal de exportación de imagen
+ */
+function closeImageExportModal() {
+    const modal = document.getElementById('imageExportModal');
+    if (modal) {
+        modal.style.transform = 'scale(0.95)';
+        modal.style.opacity = '0';
+        setTimeout(() => modal.remove(), 200);
+    }
+}
+
+// ===== CARGAR LIBRERÍAS NECESARIAS =====
+
+/**
+ * Carga la librería html2canvas si no está disponible
+ */
+function loadHtml2Canvas() {
+    return new Promise((resolve, reject) => {
+        if (window.html2canvas) {
+            resolve();
+            return;
+        }
+        
+        const script = document.createElement('script');
+        script.src = 'https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js';
+        script.onload = () => resolve();
+        script.onerror = () => reject(new Error('No se pudo cargar html2canvas'));
+        document.head.appendChild(script);
+    });
+}
+
+// ===== INICIALIZACIÓN =====
+
+// Cargar html2canvas y inicializar listeners
+loadHtml2Canvas().then(() => {
+    console.log('html2canvas cargado correctamente');
+    initializeExportListeners();
+}).catch(error => {
+    console.error('Error cargando html2canvas:', error);
+    showNotification('Error cargando librería de exportación', 'error');
+});
+
+// Hacer las funciones disponibles globalmente
+window.exportWorkspaceAsPNG = exportWorkspaceAsPNG;
+window.exportWorkspaceAsJPG = exportWorkspaceAsJPG;
+window.exportWorkspaceAsSVG = exportWorkspaceAsSVG;
+window.closeImageExportModal = closeImageExportModal;
+</script>
 
 </body>
 
