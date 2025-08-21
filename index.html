@@ -1558,6 +1558,7 @@ CREATE TABLE pedidos (
                     const primaryKeyField = findPrimaryKeyField(conn.table1);
 
                     if (foreignKeyField && primaryKeyField) {
+                        // dentro de generateSQL, donde construyes la FK:
                         sqlLines.push(`ALTER TABLE ${tableNName.toLowerCase()}`);
                         sqlLines.push(`ADD CONSTRAINT fk_${tableNName.toLowerCase()}_${table1Name.toLowerCase()}`);
                         sqlLines.push(`FOREIGN KEY (${foreignKeyField}) REFERENCES ${table1Name.toLowerCase()}(${primaryKeyField});`);
@@ -1763,56 +1764,142 @@ CREATE TABLE pedidos (
             }
         }
 
-        /**
-         * Parsea las tablas del código SQL - VERSIÓN FINAL CORREGIDA
-         */
-        function parseSQLTables(sqlCode) {
-            const tables = [];
+        // --- A. EXTRAER BLOQUES CREATE TABLE SIN ROMPER POR VARCHAR(100) ---
+        function extractCreateTableBlocks(sql) {
+            const blocks = [];
+            const re = /CREATE\s+TABLE\s+(?:IF\s+NOT\s+EXISTS\s+)?`?([A-Za-z_][A-Za-z0-9_]*)`?\s*\(/gi;
 
-            console.log('=== DEBUGGING SQL PARSER ===');
-            console.log('SQL Original:', sqlCode);
+            let m;
+            while ((m = re.exec(sql)) !== null) {
+                const tableName = m[1];
+                // índice del '(' que abre la definición
+                const openIndex = re.lastIndex - 1;
 
-            // Limpiar el código SQL
-            let cleanedSQL = sqlCode;
-            if (cleanedSQL.includes('\\n')) {
-                cleanedSQL = cleanedSQL.replace(/\\n/g, '\n');
-            }
-            cleanedSQL = cleanedSQL
-                .replace(/\\\\/g, '\\')
-                .replace(/\r\n/g, '\n')
-                .replace(/\r/g, '\n');
+                let pos = openIndex + 1;
+                let depth = 1;
+                let inSingle = false, inDouble = false, inBacktick = false;
+                let inLineComment = false, inBlockComment = false;
 
-            console.log('SQL Limpio:', cleanedSQL);
+                while (pos < sql.length) {
+                    const ch = sql[pos];
+                    const next = sql[pos + 1];
 
-            // Regex para encontrar CREATE TABLE con todo su contenido
-            const createTableRegex = /CREATE\s+TABLE\s+(?:IF\s+NOT\s+EXISTS\s+)?`?([a-zA-Z_][a-zA-Z0-9_]*)`?\s*\(\s*([\s\S]*?)\s*\)\s*(?:ENGINE\s*=\s*\w+)?(?:\s*;)?/gi;
+                    if (inLineComment) {
+                        if (ch === '\n') inLineComment = false;
+                        pos++; continue;
+                    }
+                    if (inBlockComment) {
+                        if (ch === '*' && next === '/') { inBlockComment = false; pos += 2; continue; }
+                        pos++; continue;
+                    }
 
-            let match;
-            while ((match = createTableRegex.exec(cleanedSQL)) !== null) {
-                const tableName = match[1];
-                const tableBody = match[2];
+                    if (!inSingle && !inDouble && !inBacktick) {
+                        if (ch === '-' && next === '-') { inLineComment = true; pos += 2; continue; }
+                        if (ch === '/' && next === '*') { inBlockComment = true; pos += 2; continue; }
+                        if (ch === "'") { inSingle = true; pos++; continue; }
+                        if (ch === '"') { inDouble = true; pos++; continue; }
+                        if (ch === '`') { inBacktick = true; pos++; continue; }
 
-                console.log('=== TABLA ENCONTRADA ===');
-                console.log('Nombre:', tableName);
-                console.log('Contenido RAW:', JSON.stringify(tableBody));
-
-                const fields = parseTableFieldsFixed(tableBody);
-                console.log('Campos parseados:', fields);
-
-                if (fields.length > 0) {
-                    tables.push({
-                        name: tableName,
-                        fields: fields,
-                        primaryKeys: fields.filter(f => f.isPrimary),
-                        foreignKeys: fields.filter(f => f.isForeign)
-                    });
-                    console.log(`✓ Tabla ${tableName} agregada con ${fields.length} campos`);
+                        if (ch === '(') { depth++; pos++; continue; }
+                        if (ch === ')') {
+                            depth--; pos++;
+                            if (depth === 0) break;
+                            continue;
+                        }
+                        pos++; continue;
+                    } else {
+                        // dentro de comillas
+                        if (inSingle && ch === "'" && sql[pos - 1] !== '\\') inSingle = false;
+                        else if (inDouble && ch === '"' && sql[pos - 1] !== '\\') inDouble = false;
+                        else if (inBacktick && ch === '`') inBacktick = false;
+                        pos++; continue;
+                    }
                 }
+
+                const body = sql.slice(openIndex + 1, pos).trim();
+                // saltar al ; que cierra el CREATE TABLE (si existe)
+                const semi = sql.indexOf(';', pos);
+                re.lastIndex = semi === -1 ? pos : semi + 1;
+
+                blocks.push({ name: tableName, body });
+            }
+            return blocks;
+        }
+
+        // --- B. PARSEAR TABLAS Y CAMPOS USANDO EL EXTRACTOR ---
+        function parseCreateTables(sql) {
+            const tables = [];
+            const relationships = [];
+
+            const blocks = extractCreateTableBlocks(sql);
+            for (const blk of blocks) {
+                const tableName = blk.name;
+                const tableBody = blk.body;
+
+                console.log("=== TABLA ENCONTRADA ===");
+                console.log("Nombre:", tableName);
+                console.log("Contenido RAW:", JSON.stringify(tableBody.substring(0, 200)));
+
+                const fields = [];
+                const lines = smartSplitByComma(tableBody); // ya la tenés
+
+                console.log("--- PARSEANDO CAMPOS ---");
+                console.log("Contenido:", tableBody);
+                console.log("Líneas divididas:", lines);
+
+                for (let i = 0; i < lines.length; i++) {
+                    let line = lines[i].trim();
+
+                    // ⚡ Fix: limpiar si la línea termina con ")" extra
+                    if (line.endsWith(")")) {
+                        line = line.slice(0, -1).trim();
+                    }
+
+                    if (!line || line.length < 2) continue;
+
+                    console.log(`Procesando línea ${i}: "${line}"`);
+
+                    // Ignorar constraints de tabla (PRIMARY KEY(...), UNIQUE(...), etc.)
+                    if (shouldIgnoreLine(line)) {
+                        console.log("  → Línea ignorada (constraint)");
+                        // Pero si aquí viene un FOREIGN KEY inline, lo capturamos:
+                        const fkInline = line.match(/FOREIGN\s+KEY\s*\((`?\w+`?)\)\s+REFERENCES\s+`?(\w+)`?\s*\((`?\w+`?)\)/i);
+                        if (fkInline) {
+                            const fromField = fkInline[1].replace(/`/g, "");
+                            const toTable = fkInline[2];
+                            const toField = fkInline[3].replace(/`/g, "");
+                            relationships.push({ fromTable: tableName, toTable, fromField, toField, type: "N:1" });
+                            console.log(`  ✓ Relación detectada (inline): ${tableName}.${fromField} → ${toTable}.${toField}`);
+                        }
+                        continue;
+                    }
+
+                    // Campo normal
+                    const field = parseFieldLine(line); // tu función existente
+                    if (field) {
+                        fields.push(field);
+                        console.log(`  ✓ Campo agregado: ${field.name} (${field.type})`);
+                    } else {
+                        console.log(`  ✗ No se pudo parsear: "${line}"`);
+                    }
+                }
+
+                tables.push({ name: tableName, fields });
+                console.log("Campos parseados:", fields);
+                console.log(`✓ Tabla ${tableName} agregada con ${fields.length} campos`);
             }
 
-            console.log('=== RESULTADO FINAL ===');
-            console.log('Total tablas:', tables.length);
+            console.log("=== RESULTADO FINAL (parser) ===");
+            console.log("Total tablas:", tables.length);
+            console.log("Total relaciones encontradas (inline):", relationships.length);
 
+            return { tables, relationships };
+        }
+
+        // --- C. ALIAS DE COMPATIBILIDAD PARA NO ROMPER LO DEMÁS ---
+        // Si otras partes siguen llamando parseSQLTables(sql), esto lo resuelve.
+        function parseSQLTables(sql) {
+            const { tables } = parseCreateTables(sql);
             return tables;
         }
 
@@ -1825,12 +1912,12 @@ CREATE TABLE pedidos (
          */
         function parseTableFieldsFixed(tableBody) {
             const fields = [];
+            const lines = smartSplitByComma(tableBody);
 
             console.log('--- PARSEANDO CAMPOS ---');
             console.log('Contenido:', tableBody);
 
             // Estrategia: dividir por comas, pero ser inteligente con los paréntesis
-            const lines = smartSplitByComma(tableBody);
             console.log('Líneas divididas:', lines);
 
             for (let i = 0; i < lines.length; i++) {
@@ -1840,13 +1927,35 @@ CREATE TABLE pedidos (
 
                 console.log(`Procesando línea ${i}: "${line}"`);
 
-                // Ignorar constraints
+                // 🔹 Detectar FOREIGN KEY dentro del CREATE TABLE
+                if (/^FOREIGN KEY/i.test(line)) {
+                    const fkMatch = line.match(/FOREIGN KEY\s*\((\w+)\)\s*REFERENCES\s+(\w+)\s*\((\w+)\)/i);
+                    if (fkMatch) {
+                        const fkField = {
+                            name: fkMatch[1],
+                            type: 'FK',
+                            constraints: `REFERENCES ${fkMatch[2]}(${fkMatch[3]})`,
+                            isForeignKey: true,
+                            references: {
+                                table: fkMatch[2],
+                                field: fkMatch[3]
+                            }
+                        };
+                        fields.push(fkField);
+                        console.log(`  ✓ Llave foránea detectada: ${fkField.name} → ${fkField.references.table}.${fkField.references.field}`);
+                    } else {
+                        console.log(`  ✗ No se pudo parsear FK: "${line}"`);
+                    }
+                    continue;
+                }
+
+                // 🔹 Ignorar constraints como PRIMARY KEY, UNIQUE, etc.
                 if (shouldIgnoreLine(line)) {
                     console.log('  → Línea ignorada (constraint)');
                     continue;
                 }
 
-                // Parsear el campo
+                // 🔹 Parsear campo normal
                 const field = parseFieldLine(line);
                 if (field) {
                     fields.push(field);
@@ -1861,6 +1970,7 @@ CREATE TABLE pedidos (
 
             return fields;
         }
+
 
         /**
          * Divide por comas de forma inteligente, respetando paréntesis
@@ -1880,7 +1990,6 @@ CREATE TABLE pedidos (
                     parenLevel--;
                     current += char;
                 } else if (char === ',' && parenLevel === 0) {
-                    // Coma fuera de paréntesis = separador de campo
                     if (current.trim()) {
                         parts.push(current.trim());
                     }
@@ -1890,9 +1999,19 @@ CREATE TABLE pedidos (
                 }
             }
 
-            // Agregar la última parte
             if (current.trim()) {
                 parts.push(current.trim());
+            }
+
+            // 🔧 FIX: cerrar paréntesis abiertos en tipos de datos
+            for (let i = 0; i < parts.length; i++) {
+                let open = (parts[i].match(/\(/g) || []).length;
+                let close = (parts[i].match(/\)/g) || []).length;
+                if (open > close) {
+                    parts[i] = parts[i].trim() + ')';
+                }
+                // limpiar salto de línea final en cada parte
+                parts[i] = parts[i].replace(/\n/g, '').trim();
             }
 
             return parts;
@@ -1920,15 +2039,21 @@ CREATE TABLE pedidos (
         function parseFieldLine(line) {
             // Patrones para diferentes formatos de campo
             const patterns = [
-                // nombre tipo PRIMARY KEY
-                /^\s*`?([a-zA-Z_][a-zA-Z0-9_]*)`?\s+([A-Za-z0-9\(\),\s]+?)\s+(PRIMARY\s+KEY.*?)$/i,
-                // nombre tipo constraints (sin PRIMARY KEY)
-                /^\s*`?([a-zA-Z_][a-zA-Z0-9_]*)`?\s+([A-Za-z0-9\(\),\s]+?)\s+((?:AUTO_INCREMENT|NOT\s+NULL|UNIQUE|DEFAULT\s+\S+|REFERENCES\s+\S+).*)$/i,
-                // nombre tipo (sin constraints adicionales)
-                /^\s*`?([a-zA-Z_][a-zA-Z0-9_]*)`?\s+([A-Za-z0-9\(\),\s]+)\s*$/i,
-                // solo nombre
+                // Patrón 0: campo con PRIMARY KEY inline
+                /^\s*`?([a-zA-Z_][a-zA-Z0-9_]*)`?\s+([A-Za-z0-9]+(?:\([^)]*\))?)\s+(PRIMARY\s+KEY.*)$/i,
+
+                // Patrón 1: campo con constraints
+                /^\s*`?([a-zA-Z_][a-zA-Z0-9_]*)`?\s+([A-Za-z0-9]+(?:\([^)]*\)?)?)\s+(AUTO_INCREMENT|NOT\s+NULL|UNIQUE|DEFAULT\s+[^,\s]+(?:\s+[^,]*)?|REFERENCES\s+\S+(?:\s*\([^)]*\))?.*)$/i,
+
+                // Patrón 2: campo solo con nombre + tipo
+                /^\s*`?([a-zA-Z_][a-zA-Z0-9_]*)`?\s+([A-Za-z0-9]+(?:\([^)]*\)?)?)\s*$/i,
+
+                // Patrón 3: campo solo con nombre
                 /^\s*`?([a-zA-Z_][a-zA-Z0-9_]*)`?\s*$/i
             ];
+
+
+
 
             for (let i = 0; i < patterns.length; i++) {
                 const match = line.match(patterns[i]);
@@ -1937,14 +2062,37 @@ CREATE TABLE pedidos (
                     let dataType = match[2] || 'VARCHAR(255)';
                     const constraints = match[3] || '';
 
+                    // 🔧 FIX: cerrar paréntesis en el tipo de dato si quedó abierto
+                    if (dataType.includes("(") && !dataType.includes(")")) {
+                        dataType = dataType + ")";
+                    }
+
+                    // Fix: cerrar paréntesis abiertos en los tipos
+                    if (dataType.includes("(") && !dataType.includes(")")) {
+                        dataType = dataType + ")";
+                    }
+
+
                     // Limpiar tipo de datos
                     dataType = dataType.trim().replace(/[,\s]*$/, '');
 
                     console.log(`    Patrón ${i} matched: nombre="${fieldName}", tipo="${dataType}", constraints="${constraints}"`);
 
+                    // Guardar tipo original tal cual del SQL
+                    const originalType = String(dataType || "").trim();
+
+                    // Tipo base (ej. VARCHAR, INT, DATE)
+                    const baseType = normalizeDataType(originalType);
+
+                    // Longitud si existe entre paréntesis (ej. 100 en VARCHAR(100))
+                    const lenMatch = originalType.match(/\(([^)]+)\)/);
+                    const typeLength = lenMatch ? lenMatch[1].trim() : null;
+
                     return {
                         name: fieldName,
-                        type: normalizeDataType(dataType),
+                        type: baseType,                          // sigue sirviendo para la lógica
+                        originalType: originalType.toUpperCase(),// NUEVO: lo que viene del SQL
+                        typeLength: typeLength,                  // NUEVO: longitud extraída
                         isPrimary: constraints.toUpperCase().includes('PRIMARY KEY') ||
                             constraints.toUpperCase().includes('AUTO_INCREMENT') ||
                             dataType.toUpperCase().includes('PRIMARY KEY'),
@@ -2008,6 +2156,17 @@ CREATE TABLE pedidos (
         function parseSQLRelationships(sqlCode, tables) {
             const relationships = [];
 
+
+            // ✅ FIX 2: incluir relaciones inline detectadas en parseTableFieldsFixed
+            for (const table of tables) {
+                if (table.inlineRelations) {
+                    for (const rel of table.inlineRelations) {
+                        relationships.push(rel);
+                        console.log(`  ✓ Relación inline agregada: ${rel.fromTable}.${rel.fromField} → ${rel.toTable}.${rel.toField}`);
+                    }
+                }
+            }
+
             console.log('=== PARSEANDO RELACIONES ===');
 
             // Método 1: Buscar foreign keys en los campos de las tablas
@@ -2048,10 +2207,12 @@ CREATE TABLE pedidos (
                                 if (otherTable.name !== table.name) {
                                     const tableName = otherTable.name.toLowerCase();
 
-                                    if (fieldName.includes(tableName) ||
-                                        fieldName === tableName + 'id' ||
+                                    if (
                                         fieldName === 'id' + tableName ||
-                                        fieldName === 'id_' + tableName) {
+                                        fieldName === tableName + 'id' ||
+                                        fieldName === 'id_' + tableName ||
+                                        fieldName.includes(tableName)   // este al final para capturar "idpersona"
+                                    ) {
 
                                         relationships.push({
                                             fromTable: table.name,
@@ -2070,7 +2231,8 @@ CREATE TABLE pedidos (
             }
 
             // Método 3: Buscar ALTER TABLE con FOREIGN KEY constraints
-            const alterTableRegex = /ALTER\s+TABLE\s+`?(\w+)`?\s+ADD\s+(?:CONSTRAINT\s+\w+\s+)?FOREIGN\s+KEY\s*\(\s*`?(\w+)`?\s*\)\s+REFERENCES\s+`?(\w+)`?\s*\(\s*`?(\w+)`?\s*\)/gi;
+            const alterTableRegex =
+                /ALTER\s+TABLE\s+`?(\w+)`?\s+ADD\s+(?:CONSTRAINT\s+\w+\s+)?FOREIGN\s+KEY\s*\(\s*`?(\w+)`?\s*\)\s+REFERENCES\s+`?(\w+)`?\s*\(\s*`?(\w+)`?\s*\)/gi;
 
             let match;
             while ((match = alterTableRegex.exec(sqlCode)) !== null) {
@@ -2166,11 +2328,16 @@ CREATE TABLE pedidos (
                 const keyIcon = field.isPrimary ? '<i class="fas fa-key" style="color: #f59e0b; font-size: 10px; margin-right: 4px;"></i>' :
                     field.isForeign ? '<i class="fas fa-external-link-alt" style="color: #8b5cf6; font-size: 9px; margin-right: 4px;"></i>' : '';
 
+                // Mostrar el tipo completo (VARCHAR(100), DECIMAL(10,2), etc.)
+                const displayType =
+                    field.originalType?.trim() ||
+                    (field.type + (field.typeLength ? `(${field.typeLength})` : ''));
+
                 html += `<tr>
-            <td style="${tdStyle}" contenteditable="false">${keyIcon}</td>
-            <td style="${tdStyle}" contenteditable="true">${field.name}</td>
-            <td style="${tdStyle}" contenteditable="true">${field.type}</td>
-        </tr>`;
+    <td style="${tdStyle}" contenteditable="false">${keyIcon}</td>
+    <td style="${tdStyle}" contenteditable="true">${field.name}</td>
+    <td style="${tdStyle}" contenteditable="true">${displayType}</td>
+</tr>`;
             });
 
             html += "</tbody>";
