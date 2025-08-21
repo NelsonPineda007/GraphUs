@@ -1764,7 +1764,7 @@ CREATE TABLE pedidos (
             }
         }
 
-        // --- A. EXTRAER BLOQUES CREATE TABLE SIN ROMPER POR VARCHAR(100) ---
+        // ===== FUNCIÓN AUXILIAR MEJORADA PARA EXTRAER TABLAS =====
         function extractCreateTableBlocks(sql) {
             const blocks = [];
             const re = /CREATE\s+TABLE\s+(?:IF\s+NOT\s+EXISTS\s+)?`?([A-Za-z_][A-Za-z0-9_]*)`?\s*\(/gi;
@@ -1772,7 +1772,6 @@ CREATE TABLE pedidos (
             let m;
             while ((m = re.exec(sql)) !== null) {
                 const tableName = m[1];
-                // índice del '(' que abre la definición
                 const openIndex = re.lastIndex - 1;
 
                 let pos = openIndex + 1;
@@ -1780,7 +1779,7 @@ CREATE TABLE pedidos (
                 let inSingle = false, inDouble = false, inBacktick = false;
                 let inLineComment = false, inBlockComment = false;
 
-                while (pos < sql.length) {
+                while (pos < sql.length && depth > 0) {
                     const ch = sql[pos];
                     const next = sql[pos + 1];
 
@@ -1825,6 +1824,7 @@ CREATE TABLE pedidos (
             }
             return blocks;
         }
+
 
         // --- B. PARSEAR TABLAS Y CAMPOS USANDO EL EXTRACTOR ---
         function parseCreateTables(sql) {
@@ -1908,88 +1908,154 @@ CREATE TABLE pedidos (
         }
 
         /**
-         * Función FIJA para parsear campos de tabla
+         * Parsea los campos de una tabla y detecta FOREIGN KEY inline de forma tolerante.
+         * Devuelve { fields, inlineRelations }
          */
-        function parseTableFieldsFixed(tableBody) {
+        function parseTableFieldsFixed(tableName, rawContent) {
             const fields = [];
-            const lines = smartSplitByComma(tableBody);
+            const inlineRelations = [];
 
-            console.log('--- PARSEANDO CAMPOS ---');
-            console.log('Contenido:', tableBody);
+            // Usa tu smartSplitByComma actual
+            const lines = smartSplitByComma(rawContent);
 
-            // Estrategia: dividir por comas, pero ser inteligente con los paréntesis
-            console.log('Líneas divididas:', lines);
+            // Regex tolerante para FOREIGN KEY inline:
+            // - Permite backticks opcionales
+            // - No exige el paréntesis final de la columna referenciada
+            // - Tolera un ')' extra al final (pegado al cierre de la tabla)
+            const FK_INLINE_REGEX =
+                /FOREIGN\s+KEY\s*\(\s*`?([a-zA-Z0-9_]+)`?\s*\)\s+REFERENCES\s+`?([a-zA-Z0-9_]+)`?\s*\(\s*`?([a-zA-Z0-9_]+)`?\s*\)?/i;
 
             for (let i = 0; i < lines.length; i++) {
-                const line = lines[i].trim();
+                let line = lines[i].trim();
 
-                if (!line || line.length < 2) continue;
+                // 0) Intentar primero capturar FOREIGN KEY (ANTES de ignorar la línea)
+                const fkMatch = line.match(FK_INLINE_REGEX);
+                if (fkMatch) {
+                    const fromField = fkMatch[1];
+                    const toTable = fkMatch[2];
+                    const toField = fkMatch[3];
 
-                console.log(`Procesando línea ${i}: "${line}"`);
-
-                // 🔹 Detectar FOREIGN KEY dentro del CREATE TABLE
-                if (/^FOREIGN KEY/i.test(line)) {
-                    const fkMatch = line.match(/FOREIGN KEY\s*\((\w+)\)\s*REFERENCES\s+(\w+)\s*\((\w+)\)/i);
-                    if (fkMatch) {
-                        const fkField = {
-                            name: fkMatch[1],
-                            type: 'FK',
-                            constraints: `REFERENCES ${fkMatch[2]}(${fkMatch[3]})`,
-                            isForeignKey: true,
-                            references: {
-                                table: fkMatch[2],
-                                field: fkMatch[3]
-                            }
+                    // Marcar el campo si ya existe; si no, crearlo
+                    let f = fields.find(x => x.name?.toLowerCase() === fromField.toLowerCase());
+                    if (!f) {
+                        f = {
+                            name: fromField,
+                            type: 'INT',               // default razonable
+                            isPrimary: false,
+                            isAuto: false,
+                            isForeign: true,
+                            referencesTable: toTable,
+                            referencesField: toField
                         };
-                        fields.push(fkField);
-                        console.log(`  ✓ Llave foránea detectada: ${fkField.name} → ${fkField.references.table}.${fkField.references.field}`);
+                        fields.push(f);
                     } else {
-                        console.log(`  ✗ No se pudo parsear FK: "${line}"`);
+                        f.isForeign = true;
+                        f.referencesTable = toTable;
+                        f.referencesField = toField;
                     }
-                    continue;
+
+                    // Guardar relación inline
+                    inlineRelations.push({
+                        fromTable: tableName,
+                        toTable,
+                        fromField,
+                        toField,
+                        type: 'N:1'
+                    });
+
+                    console.log(`  ✓ Relación detectada (inline): ${tableName}.${fromField} → ${toTable}.${toField}`);
+                    continue; // ya procesada esta línea
                 }
 
-                // 🔹 Ignorar constraints como PRIMARY KEY, UNIQUE, etc.
+                // 1) Si no es FK, podemos decidir si ignorarla (constraints, comments, etc.)
                 if (shouldIgnoreLine(line)) {
-                    console.log('  → Línea ignorada (constraint)');
+                    console.log("  → Línea ignorada (constraint/comentario)");
                     continue;
                 }
 
-                // 🔹 Parsear campo normal
-                const field = parseFieldLine(line);
-                if (field) {
-                    fields.push(field);
-                    console.log(`  ✓ Campo agregado: ${field.name} (${field.type})`);
-                } else {
-                    console.log(`  ✗ No se pudo parsear: "${line}"`);
+                // 2) Parseo normal de campos
+                const patterns = [
+                    // nombre  tipo   constraints
+                    /^\s*`?([a-zA-Z_][a-zA-Z0-9_]*)`?\s+([A-Z]+(?:\(\d+(?:,\d+)?\))?)\s+(.*)$/i, // con constraints
+                    /^\s*`?([a-zA-Z_][a-zA-Z0-9_]*)`?\s+([A-Z]+(?:\(\d+(?:,\d+)?\))?)\s*$/i,     // sin constraints
+                ];
+
+                let matched = false;
+                for (const p of patterns) {
+                    const m = line.match(p);
+                    if (m) {
+                        const name = m[1];
+                        const type = (m[2] || '').toUpperCase();
+                        const constraints = (m[3] || '').toUpperCase();
+
+                        const isPrimary = /\bPRIMARY\s+KEY\b/i.test(constraints);
+                        const isAuto = /\bAUTO_INCREMENT\b/i.test(constraints);
+
+                        fields.push({
+                            name,
+                            type: type.startsWith('VARCHAR') ? 'VARCHAR' : type,
+                            isPrimary,
+                            isAuto,
+                            isForeign: false,
+                            referencesTable: null,
+                            referencesField: null
+                        });
+
+                        console.log(`  ✓ Campo agregado: ${name} (${type.startsWith('VARCHAR') ? 'VARCHAR' : type})`);
+                        matched = true;
+                        break;
+                    }
+                }
+
+                if (!matched) {
+                    console.log(`   ✗ No se pudo parsear: ${line}`);
                 }
             }
 
-            console.log('--- RESULTADO ---');
-            console.log(`Campos encontrados: ${fields.length}`);
-
-            return fields;
+            console.log("Campos parseados:", fields);
+            return { fields, inlineRelations };
         }
 
 
         /**
-         * Divide por comas de forma inteligente, respetando paréntesis
+         * Divide por comas de forma inteligente, respetando paréntesis, comillas y unicode
          */
         function smartSplitByComma(text) {
             const parts = [];
             let current = '';
             let parenLevel = 0;
+            let inSingleQuote = false;
+            let inDoubleQuote = false;
 
             for (let i = 0; i < text.length; i++) {
                 const char = text[i];
 
-                if (char === '(') {
+                // Manejo de comillas
+                if (char === "'" && !inDoubleQuote) {
+                    inSingleQuote = !inSingleQuote;
+                    current += char;
+                    continue;
+                }
+                if (char === '"' && !inSingleQuote) {
+                    inDoubleQuote = !inDoubleQuote;
+                    current += char;
+                    continue;
+                }
+
+                // Manejo de paréntesis
+                if (char === '(' && !inSingleQuote && !inDoubleQuote) {
                     parenLevel++;
                     current += char;
-                } else if (char === ')') {
-                    parenLevel--;
+                    continue;
+                }
+                if (char === ')' && !inSingleQuote && !inDoubleQuote) {
+                    parenLevel = Math.max(0, parenLevel - 1);
                     current += char;
-                } else if (char === ',' && parenLevel === 0) {
+                    continue;
+                }
+
+                // Split por coma solo si NO está dentro de paréntesis ni comillas
+                if (char === ',' && parenLevel === 0 && !inSingleQuote && !inDoubleQuote) {
                     if (current.trim()) {
                         parts.push(current.trim());
                     }
@@ -2003,57 +2069,115 @@ CREATE TABLE pedidos (
                 parts.push(current.trim());
             }
 
-            // 🔧 FIX: cerrar paréntesis abiertos en tipos de datos
+            // Normalizar: cerrar paréntesis abiertos y limpiar saltos
             for (let i = 0; i < parts.length; i++) {
                 let open = (parts[i].match(/\(/g) || []).length;
                 let close = (parts[i].match(/\)/g) || []).length;
                 if (open > close) {
-                    parts[i] = parts[i].trim() + ')';
+                    parts[i] = parts[i] + ')';  // completa paréntesis faltante
                 }
-                // limpiar salto de línea final en cada parte
-                parts[i] = parts[i].replace(/\n/g, '').trim();
+
+                // 🔧 FIX: si es un FOREIGN KEY con REFERENCES truncado, ciérralo
+                if (/REFERENCES\s+\w+\s*\(\s*\w+$/.test(parts[i])) {
+                    parts[i] = parts[i] + ')';
+                }
+
+                parts[i] = parts[i].replace(/\n+/g, ' ').trim();
             }
+
+            // 🟢 DEBUG opcional
+            console.log("🔎 smartSplitByComma →", parts);
 
             return parts;
         }
+
+
+
 
         /**
          * Verifica si una línea debe ser ignorada (constraints, comentarios, etc.)
          */
         function shouldIgnoreLine(line) {
-            const upper = line.toUpperCase();
+            const upper = line.toUpperCase().trim();
+
+            // No ignores líneas que empiezan con un nombre de campo (columna + tipo)
+            const startsWithColumn = /^\s*`?[A-Z_][A-Z0-9_]*`?\s+[A-Z]+/i.test(line);
+            if (startsWithColumn) return false;
+
+            // Ignorar solo constraints de tabla, índices y comentarios
             return (
-                (upper.includes('PRIMARY KEY') && line.includes('(')) ||
-                (upper.includes('FOREIGN KEY') && line.includes('(')) ||
-                upper.includes('CONSTRAINT') ||
-                upper.includes('INDEX') ||
-                line.startsWith('--') ||
-                line.startsWith('/*') ||
-                (upper.includes('KEY') && line.includes('(') && !line.match(/^\w+\s+/))
+                // PRIMARY KEY(...) / UNIQUE(...) / CHECK(...)
+                /\bPRIMARY\s+KEY\s*\(/i.test(upper) ||
+                /\bUNIQUE\s*\(/i.test(upper) ||
+                /\bCHECK\s*\(/i.test(upper) ||
+                // FOREIGN KEY(...) — OJO: no lo ignoramos aquí, lo captura antes el regex tolerante
+                (/\bFOREIGN\s+KEY\b/i.test(upper) && /\(/.test(line)) ||
+                // Otros
+                /\bCONSTRAINT\b/i.test(upper) ||
+                /\bINDEX\b/i.test(upper) ||
+                /^\s*--/.test(line) ||
+                /^\s*\/\*/.test(line) ||
+                // KEY (...) que no comienza como columna
+                (/\bKEY\b/i.test(upper) && /\(/.test(line) && !/^\s*\w+\s+/i.test(line))
             );
         }
 
-        /**
-         * Parsea una línea individual de campo
-         */
-        function parseFieldLine(line) {
-            // Patrones para diferentes formatos de campo
+
+
+        // ===== FUNCIÓN MEJORADA PARA PARSEAR LÍNEAS DE CAMPOS =====
+        function parseFieldLine(line, tableName) {
+            line = line.trim();
+
+            // 🟢 1. Detectar FOREIGN KEY (mejorado para manejar paréntesis no cerrados)
+            const fkRegex = /FOREIGN\s+KEY\s*\(([^)]+)\)\s*REFERENCES\s+([^(]+)\(([^)]*)/i;
+            if (fkRegex.test(line)) {
+                const fkMatch = line.match(fkRegex);
+                if (fkMatch) {
+                    const fieldName = fkMatch[1].trim().replace(/`/g, '');
+                    const refTable = fkMatch[2].trim().replace(/`/g, '');
+                    // Manejar caso donde el campo referenciado podría no estar completo
+                    let refField = (fkMatch[3] || '').trim().replace(/`/g, '');
+
+                    // Limpiar paréntesis sobrantes
+                    refField = refField.replace(/\)+$/, '');
+
+                    // Si no se especificó campo, usar el mismo nombre o "id"
+                    if (!refField) {
+                        refField = fieldName.replace(/_id$/, '') + '_id';
+                        if (refField === fieldName + '_id') refField = 'id';
+                    }
+
+                    console.log(`    ✓ Relación detectada (inline): ${tableName}.${fieldName} → ${refTable}.${refField}`);
+
+                    return {
+                        name: fieldName,
+                        type: "FOREIGN_KEY",
+                        originalType: "FK",
+                        isPrimary: false,
+                        isForeign: true,
+                        isNotNull: false,
+                        isUnique: false,
+                        defaultValue: null,
+                        referencesTable: refTable,
+                        referencesField: refField
+                    };
+                }
+            }
+
+            // 🟡 2. Patrones para campos normales (sin cambios)
             const patterns = [
                 // Patrón 0: campo con PRIMARY KEY inline
-                /^\s*`?([a-zA-Z_][a-zA-Z0-9_]*)`?\s+([A-Za-z0-9]+(?:\([^)]*\))?)\s+(PRIMARY\s+KEY.*)$/i,
+                /^\s*`?([\p{L}_][\p{L}0-9_ñÑáéíóúÁÉÍÓÚ]*)`?\s+([A-Za-z0-9]+(?:\([^)]*\))?)\s+(PRIMARY\s+KEY.*)$/iu,
 
                 // Patrón 1: campo con constraints
-                /^\s*`?([a-zA-Z_][a-zA-Z0-9_]*)`?\s+([A-Za-z0-9]+(?:\([^)]*\)?)?)\s+(AUTO_INCREMENT|NOT\s+NULL|UNIQUE|DEFAULT\s+[^,\s]+(?:\s+[^,]*)?|REFERENCES\s+\S+(?:\s*\([^)]*\))?.*)$/i,
+                /^\s*`?([\p{L}_][\p{L}0-9_ñÑáéíóúÁÉÍÓÚ]*)`?\s+([A-Za-z0-9]+(?:\([^)]*\)?)?)\s+(AUTO_INCREMENT|NOT\s+NULL|UNIQUE|DEFAULT\s+[^,\s]+(?:\s+[^,]*)?|REFERENCES\s+\S+(?:\s*\([^)]*\))?.*)$/iu,
 
                 // Patrón 2: campo solo con nombre + tipo
-                /^\s*`?([a-zA-Z_][a-zA-Z0-9_]*)`?\s+([A-Za-z0-9]+(?:\([^)]*\)?)?)\s*$/i,
+                /^\s*`?([\p{L}_][\p{L}0-9_ñÑáéíóúÁÉÍÓÚ]*)`?\s+([A-Za-z0-9]+(?:\([^)]*\)?)?)\s*$/iu,
 
                 // Patrón 3: campo solo con nombre
-                /^\s*`?([a-zA-Z_][a-zA-Z0-9_]*)`?\s*$/i
+                /^\s*`?([\p{L}_][\p{L}0-9_ñÑáéíóúÁÉÍÓÚ]*)`?\s*$/iu
             ];
-
-
-
 
             for (let i = 0; i < patterns.length; i++) {
                 const match = line.match(patterns[i]);
@@ -2067,32 +2191,21 @@ CREATE TABLE pedidos (
                         dataType = dataType + ")";
                     }
 
-                    // Fix: cerrar paréntesis abiertos en los tipos
-                    if (dataType.includes("(") && !dataType.includes(")")) {
-                        dataType = dataType + ")";
-                    }
-
-
                     // Limpiar tipo de datos
                     dataType = dataType.trim().replace(/[,\s]*$/, '');
 
                     console.log(`    Patrón ${i} matched: nombre="${fieldName}", tipo="${dataType}", constraints="${constraints}"`);
 
-                    // Guardar tipo original tal cual del SQL
                     const originalType = String(dataType || "").trim();
-
-                    // Tipo base (ej. VARCHAR, INT, DATE)
                     const baseType = normalizeDataType(originalType);
-
-                    // Longitud si existe entre paréntesis (ej. 100 en VARCHAR(100))
                     const lenMatch = originalType.match(/\(([^)]+)\)/);
                     const typeLength = lenMatch ? lenMatch[1].trim() : null;
 
                     return {
                         name: fieldName,
-                        type: baseType,                          // sigue sirviendo para la lógica
-                        originalType: originalType.toUpperCase(),// NUEVO: lo que viene del SQL
-                        typeLength: typeLength,                  // NUEVO: longitud extraída
+                        type: baseType,
+                        originalType: originalType.toUpperCase(),
+                        typeLength: typeLength,
                         isPrimary: constraints.toUpperCase().includes('PRIMARY KEY') ||
                             constraints.toUpperCase().includes('AUTO_INCREMENT') ||
                             dataType.toUpperCase().includes('PRIMARY KEY'),
@@ -2106,8 +2219,12 @@ CREATE TABLE pedidos (
                 }
             }
 
+            console.log("   ✗ No se pudo parsear:", line);
             return null;
         }
+
+
+
 
         /**
          * Normaliza tipos de datos SQL
@@ -2150,87 +2267,12 @@ CREATE TABLE pedidos (
             return refMatch ? refMatch[1] : null;
         }
 
-        /**
-         * Parsea relaciones del código SQL
-         */
+        // ===== FUNCIÓN MEJORADA PARA DETECTAR RELACIONES EN LÍNEAS SEPARADAS =====
         function parseSQLRelationships(sqlCode, tables) {
             const relationships = [];
+            console.log("=== PARSEANDO RELACIONES ===");
 
-
-            // ✅ FIX 2: incluir relaciones inline detectadas en parseTableFieldsFixed
-            for (const table of tables) {
-                if (table.inlineRelations) {
-                    for (const rel of table.inlineRelations) {
-                        relationships.push(rel);
-                        console.log(`  ✓ Relación inline agregada: ${rel.fromTable}.${rel.fromField} → ${rel.toTable}.${rel.toField}`);
-                    }
-                }
-            }
-
-            console.log('=== PARSEANDO RELACIONES ===');
-
-            // Método 1: Buscar foreign keys en los campos de las tablas
-            tables.forEach(table => {
-                console.log(`Verificando tabla: ${table.name}`);
-
-                table.fields.forEach(field => {
-                    console.log(`  Campo: ${field.name}, es FK: ${field.isForeign}, referencia: ${field.referencesTable}`);
-
-                    if (field.isForeign && field.referencesTable) {
-                        const referencedTable = tables.find(t => t.name.toLowerCase() === field.referencesTable.toLowerCase());
-                        if (referencedTable) {
-                            relationships.push({
-                                fromTable: table.name,
-                                toTable: referencedTable.name,
-                                fromField: field.name,
-                                toField: field.referencesField || 'id',
-                                type: '1:N'
-                            });
-                            console.log(`  → Relación encontrada: ${table.name}.${field.name} → ${referencedTable.name}.${field.referencesField || 'id'}`);
-                        }
-                    }
-                });
-            });
-
-            // Método 2: Inferir relaciones por nombres de campos (si no hay FKs explícitas)
-            if (relationships.length === 0) {
-                console.log('No se encontraron FKs explícitas, infiriendo por nombres...');
-
-                tables.forEach(table => {
-                    table.fields.forEach(field => {
-                        // Buscar campos que terminen en "id" o contengan nombre de otra tabla
-                        const fieldName = field.name.toLowerCase();
-
-                        if (fieldName.includes('id') && fieldName !== 'id' && !field.isPrimary) {
-                            // Intentar encontrar tabla referenciada
-                            tables.forEach(otherTable => {
-                                if (otherTable.name !== table.name) {
-                                    const tableName = otherTable.name.toLowerCase();
-
-                                    if (
-                                        fieldName === 'id' + tableName ||
-                                        fieldName === tableName + 'id' ||
-                                        fieldName === 'id_' + tableName ||
-                                        fieldName.includes(tableName)   // este al final para capturar "idpersona"
-                                    ) {
-
-                                        relationships.push({
-                                            fromTable: table.name,
-                                            toTable: otherTable.name,
-                                            fromField: field.name,
-                                            toField: 'id',
-                                            type: '1:N'
-                                        });
-                                        console.log(`  → Relación inferida: ${table.name}.${field.name} → ${otherTable.name}.id`);
-                                    }
-                                }
-                            });
-                        }
-                    });
-                });
-            }
-
-            // Método 3: Buscar ALTER TABLE con FOREIGN KEY constraints
+            // 1. Buscar FOREIGN KEYs en ALTER TABLE (mejorado)
             const alterTableRegex =
                 /ALTER\s+TABLE\s+`?(\w+)`?\s+ADD\s+(?:CONSTRAINT\s+\w+\s+)?FOREIGN\s+KEY\s*\(\s*`?(\w+)`?\s*\)\s+REFERENCES\s+`?(\w+)`?\s*\(\s*`?(\w+)`?\s*\)/gi;
 
@@ -2246,14 +2288,110 @@ CREATE TABLE pedidos (
                     toTable: toTable,
                     fromField: fromField,
                     toField: toField,
-                    type: '1:N'
+                    type: "1:N"
                 });
                 console.log(`  → FK Constraint encontrado: ${fromTable}.${fromField} → ${toTable}.${toField}`);
+            }
+
+            // 2. Buscar FOREIGN KEYs en CREATE TABLE (líneas separadas)
+            const createTableFkRegex =
+                /FOREIGN\s+KEY\s*\(\s*`?(\w+)`?\s*\)\s+REFERENCES\s+`?(\w+)`?\s*\(\s*`?(\w+)`?\s*\)/gi;
+
+            let fkMatch;
+            while ((fkMatch = createTableFkRegex.exec(sqlCode)) !== null) {
+                // Encontrar el nombre de la tabla a la que pertenece este FK
+                const tableStart = sqlCode.lastIndexOf('CREATE TABLE', fkMatch.index);
+                if (tableStart !== -1) {
+                    const tableNameMatch = sqlCode.substring(tableStart, fkMatch.index).match(/CREATE\s+TABLE\s+`?(\w+)`?/i);
+                    if (tableNameMatch) {
+                        const fromTable = tableNameMatch[1];
+                        const fromField = fkMatch[1];
+                        const toTable = fkMatch[2];
+                        const toField = fkMatch[3];
+
+                        relationships.push({
+                            fromTable: fromTable,
+                            toTable: toTable,
+                            fromField: fromField,
+                            toField: toField,
+                            type: "1:N"
+                        });
+                        console.log(`  → FK en CREATE TABLE: ${fromTable}.${fromField} → ${toTable}.${toField}`);
+                    }
+                }
+            }
+
+            // 3. Incluir relaciones inline detectadas durante el parseo de campos
+            for (const table of tables) {
+                if (table.inlineRelations) {
+                    for (const rel of table.inlineRelations) {
+                        relationships.push(rel);
+                        console.log(`  ✓ Relación inline agregada: ${rel.fromTable}.${rel.fromField} → ${rel.toTable}.${rel.toField}`);
+                    }
+                }
+            }
+
+            // 4. Revisar campos con referencia explícita
+            tables.forEach(table => {
+                console.log(`Verificando tabla: ${table.name}`);
+
+                table.fields.forEach(field => {
+                    console.log(`  Campo: ${field.name}, es FK: ${field.isForeign}, referencia: ${field.referencesTable}.${field.referencesField}`);
+
+                    if (field.isForeign && field.referencesTable) {
+                        relationships.push({
+                            fromTable: table.name,
+                            toTable: field.referencesTable,
+                            fromField: field.name,
+                            toField: field.referencesField || "id",
+                            type: "1:N"
+                        });
+                        console.log(`  → Relación encontrada: ${table.name}.${field.name} → ${field.referencesTable}.${field.referencesField || "id"}`);
+                    }
+                });
+            });
+
+            // 5. Fallback: Inferir por nombres de campos si no hay ninguna FK explícita
+            if (relationships.length === 0) {
+                console.log("⚠️ No se encontraron FKs explícitas, infiriendo por nombres...");
+
+                tables.forEach(table => {
+                    table.fields.forEach(field => {
+                        const fieldName = field.name.toLowerCase();
+
+                        if ((fieldName.includes("id") && fieldName !== "id" && !field.isPrimary) ||
+                            fieldName.endsWith("_id")) {
+                            tables.forEach(otherTable => {
+                                if (otherTable.name !== table.name) {
+                                    const tableName = otherTable.name.toLowerCase();
+
+                                    if (
+                                        fieldName === "id" + tableName ||
+                                        fieldName === tableName + "id" ||
+                                        fieldName === "id_" + tableName ||
+                                        fieldName.includes(tableName) ||
+                                        fieldName.endsWith("_id") && fieldName.replace(/_id$/, '') === tableName
+                                    ) {
+                                        relationships.push({
+                                            fromTable: table.name,
+                                            toTable: otherTable.name,
+                                            fromField: field.name,
+                                            toField: "id",
+                                            type: "1:N"
+                                        });
+                                        console.log(`  → Relación inferida: ${table.name}.${field.name} → ${otherTable.name}.id`);
+                                    }
+                                }
+                            });
+                        }
+                    });
+                });
             }
 
             console.log(`Total relaciones encontradas: ${relationships.length}`);
             return relationships;
         }
+
 
         /**
          * Crea entidades en el workspace desde las tablas parseadas
