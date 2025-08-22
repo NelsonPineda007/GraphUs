@@ -872,7 +872,7 @@ CREATE TABLE pedidos (
                     </div>
                     
                     <div class="p-3 border border-gray-200 rounded-lg hover:shadow-sm transition-shadow cursor-pointer">
-                        <div class="flex items-center space-x-3">
+                        <div  class="flex items-center space-x-3">
                             <div class="w-8 h-8 bg-yellow-100 rounded flex items-center justify-center">
                                 <i class="fas fa-file-pdf text-yellow-600 text-sm"></i>
                             </div>
@@ -1459,16 +1459,10 @@ CREATE TABLE pedidos (
         let isExpanded = false;
         let originalHeight = '16rem';
 
-        // ===== CORRECCIÓN PARA generateSQL =====
+        // ===== FUNCIÓN MEJORADA PARA GENERAR SQL =====
+        // ===== FUNCIÓN CORREGIDA PARA GENERAR SQL CON FOREIGN KEYS =====
         function generateSQL() {
             const sqlEditor = document.getElementById('sqlEditor');
-            const buttonText = event.target.textContent.trim();
-
-            // Si el botón dice "Generar Diagrama", parsear SQL
-            if (buttonText.includes('Generar Diagrama')) {
-                parseQLToiagram();
-                return;
-            }
 
             // Código para generar SQL desde entidades
             const workspace = document.getElementById('workspaceArea');
@@ -1486,14 +1480,16 @@ CREATE TABLE pedidos (
             sqlLines.push('-- Fecha: ' + new Date().toLocaleString());
             sqlLines.push('');
 
-            // Generar todas las tablas
-            entities.forEach((entity, index) => {
-                const entityName = entity.querySelector('th')?.textContent || `Entity_${index + 1}`;
+            // Primero generar todas las tablas sin foreign keys
+            entities.forEach((entity) => {
+                const entityName = entity.querySelector('th')?.textContent?.trim() || 'tabla';
                 const rows = entity.querySelectorAll('tbody tr');
 
                 sqlLines.push(`CREATE TABLE ${entityName.toLowerCase()} (`);
 
                 const fieldLines = [];
+                const primaryKeys = [];
+
                 rows.forEach(row => {
                     const cells = row.querySelectorAll('td');
                     if (cells.length >= 2) {
@@ -1505,26 +1501,50 @@ CREATE TABLE pedidos (
                         const hasPrimaryKey = keyCell.querySelector('.fa-key');
                         const hasForeignKey = keyCell.querySelector('.fa-external-link-alt');
 
-                        // CORRECCIÓN: Leer el tipo de la tercera columna
+                        // Obtener el tipo de dato
                         let dataType = 'VARCHAR(255)'; // Valor por defecto
                         if (typeCell && typeCell.textContent.trim()) {
                             dataType = typeCell.textContent.trim();
+
+                            // Asegurar que los tipos de datos sean válidos en MySQL
+                            if (dataType.toUpperCase().includes('INTEGER')) {
+                                dataType = dataType.replace(/INTEGER/i, 'INT');
+                            }
+                            if (dataType.toUpperCase().includes('NUMBER')) {
+                                dataType = dataType.replace(/NUMBER/i, 'INT');
+                            }
+                            if (dataType.toUpperCase().includes('STRING')) {
+                                dataType = dataType.replace(/STRING/i, 'VARCHAR(255)');
+                            }
+                            if (dataType.toUpperCase().includes('TEXT') && !dataType.includes('(')) {
+                                dataType = 'TEXT';
+                            }
+                            if (dataType.toUpperCase().includes('DATE') && !dataType.toUpperCase().includes('TIME')) {
+                                dataType = 'DATE';
+                            }
+                            if (dataType.toUpperCase().includes('DECIMAL') && !dataType.includes('(')) {
+                                dataType = 'DECIMAL(10,2)';
+                            }
                         }
 
+                        // Solo agregar el campo (las FKs se agregarán después como constraints)
                         let line = `    ${fieldName.toLowerCase()} ${dataType}`;
 
                         if (hasPrimaryKey) {
                             line += ' PRIMARY KEY';
+                            primaryKeys.push(fieldName.toLowerCase());
                             if (dataType.toUpperCase().includes('INT')) {
                                 line += ' AUTO_INCREMENT';
                             }
                         }
 
-                        // Agregar NOT NULL a campos importantes (excepto PK y FK)
-                        if (!hasPrimaryKey && !hasForeignKey) {
+                        // Agregar NOT NULL a campos importantes
+                        if (!hasPrimaryKey) {
                             if (fieldName.toLowerCase().includes('nombre') ||
                                 fieldName.toLowerCase().includes('email') ||
-                                fieldName.toLowerCase().includes('titulo')) {
+                                fieldName.toLowerCase().includes('titulo') ||
+                                fieldName.toLowerCase().includes('fecha') ||
+                                fieldName.toLowerCase().includes('monto')) {
                                 line += ' NOT NULL';
                             }
                         }
@@ -1546,23 +1566,34 @@ CREATE TABLE pedidos (
                 sqlLines.push('');
             });
 
-            // CORRECCIÓN: Agregar foreign keys basado en conexiones
+            // Ahora agregar las foreign keys como ALTER TABLE statements
             if (window.allConnections && allConnections.length > 0) {
                 sqlLines.push('-- Agregar relaciones (Foreign Keys)');
+                sqlLines.push('');
+
+                // Usar un objeto para evitar constraints duplicados
+                const addedConstraints = {};
+
                 allConnections.forEach((conn, index) => {
-                    const table1Name = conn.table1?.querySelector('th')?.textContent || 'table1';
-                    const tableNName = conn.tableN?.querySelector('th')?.textContent || 'tableN';
+                    const table1Name = conn.table1?.querySelector('th')?.textContent?.trim().toLowerCase() || 'table1';
+                    const tableNName = conn.tableN?.querySelector('th')?.textContent?.trim().toLowerCase() || 'tableN';
 
                     // Buscar campo que podría ser foreign key en la tabla N
                     const foreignKeyField = findForeignKeyField(conn.tableN, table1Name);
                     const primaryKeyField = findPrimaryKeyField(conn.table1);
 
                     if (foreignKeyField && primaryKeyField) {
-                        // dentro de generateSQL, donde construyes la FK:
-                        sqlLines.push(`ALTER TABLE ${tableNName.toLowerCase()}`);
-                        sqlLines.push(`ADD CONSTRAINT fk_${tableNName.toLowerCase()}_${table1Name.toLowerCase()}`);
-                        sqlLines.push(`FOREIGN KEY (${foreignKeyField}) REFERENCES ${table1Name.toLowerCase()}(${primaryKeyField});`);
-                        sqlLines.push('');
+                        const constraintName = `fk_${tableNName}_${table1Name}`;
+
+                        // Evitar agregar la misma constraint múltiples veces
+                        if (!addedConstraints[constraintName]) {
+                            sqlLines.push(`ALTER TABLE ${tableNName}`);
+                            sqlLines.push(`ADD CONSTRAINT ${constraintName}`);
+                            sqlLines.push(`FOREIGN KEY (${foreignKeyField}) REFERENCES ${table1Name}(${primaryKeyField});`);
+                            sqlLines.push('');
+
+                            addedConstraints[constraintName] = true;
+                        }
                     }
                 });
             }
@@ -1573,8 +1604,10 @@ CREATE TABLE pedidos (
             showNotification('Código SQL generado exitosamente', 'success');
         }
 
-        // Función auxiliar para encontrar campo de foreign key
+        // Función auxiliar mejorada para encontrar campo de foreign key
         function findForeignKeyField(entity, referencedTableName) {
+            if (!entity) return null;
+
             const rows = entity.querySelectorAll('tbody tr');
             for (let row of rows) {
                 const cells = row.querySelectorAll('td');
@@ -1596,8 +1629,10 @@ CREATE TABLE pedidos (
             return null;
         }
 
-        // Función auxiliar para encontrar campo de primary key
+        // Función auxiliar mejorada para encontrar campo de primary key
         function findPrimaryKeyField(entity) {
+            if (!entity) return 'id';
+
             const rows = entity.querySelectorAll('tbody tr');
             for (let row of rows) {
                 const cells = row.querySelectorAll('td');
