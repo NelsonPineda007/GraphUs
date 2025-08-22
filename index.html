@@ -4,13 +4,13 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>GraphUs - Professional Navbar</title>
+    <title>GraphUs - Creación de diagramas ER</title>
     <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="icon" href="icon/icon.png" type="image/png">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Varela+Round:wght@400&display=swap" rel="stylesheet">
-    <link rel="icon" href="/icon/icon.png" type="image/x-icon">
     <style>
         /* Estilos originales del sidebar */
         .sidebar-collapsed {
@@ -3931,564 +3931,564 @@ CREATE TABLE pedidos (
         window.exportWorkspaceAsSVG = exportWorkspaceAsSVG;
         window.closeImageExportModal = closeImageExportModal;
     </script>
-<script>
-    /*! export-sql-txt.js
- *  Añade la opción de "Exportar Código SQL → Script completo" y un botón
- *  "Exportar TXT" que generan el SQL desde el diagrama actual y lo descargan
- *  como .txt con nombre GraphUS_Diagrama_fecha.txt — sin tocar tu código existente.
- */
-(function () {
-  // --- utils ---
-  function slugify(s) {
-    return String(s || 'proyecto')
-      .normalize('NFKD').replace(/[\u0300-\u036f]/g, '')
-      .toLowerCase().trim()
-      .replace(/[^a-z0-9]+/g, '_').replace(/^_+|_+$/g, '');
-  }
-  function getProjectName() {
-    const byId = document.querySelector('#projectName')?.value;
-    const byData = document.querySelector('[data-project-name]')?.getAttribute('data-project-name')
-                   || document.querySelector('[data-project]')?.getAttribute('data-project');
-    const byTitle = document.querySelector('.project-title')?.textContent
-                   || document.querySelector('.brand-title')?.textContent
-                   || document.title;
-    return (byId || byData || byTitle || 'proyecto').trim();
-  }
-  function yyyy_mm_dd(d) {
-    const y = d.getFullYear();
-    const m = String(d.getMonth() + 1).padStart(2, '0');
-    const day = String(d.getDate()).padStart(2, '0');
-    return `${y}-${m}-${day}`;
-  }
-  function notify(msg, type) {
-    if (typeof window.showNotification === 'function') {
-      window.showNotification(msg, type || 'info');
-    } else {
-      console.log(`[${type || 'info'}] ${msg}`);
-    }
-  }
+    <script>
+        /*! export-sql-txt.js
+     *  Añade la opción de "Exportar Código SQL → Script completo" y un botón
+     *  "Exportar TXT" que generan el SQL desde el diagrama actual y lo descargan
+     *  como .txt con nombre GraphUS_Diagrama_fecha.txt — sin tocar tu código existente.
+     */
+        (function () {
+            // --- utils ---
+            function slugify(s) {
+                return String(s || 'proyecto')
+                    .normalize('NFKD').replace(/[\u0300-\u036f]/g, '')
+                    .toLowerCase().trim()
+                    .replace(/[^a-z0-9]+/g, '_').replace(/^_+|_+$/g, '');
+            }
+            function getProjectName() {
+                const byId = document.querySelector('#projectName')?.value;
+                const byData = document.querySelector('[data-project-name]')?.getAttribute('data-project-name')
+                    || document.querySelector('[data-project]')?.getAttribute('data-project');
+                const byTitle = document.querySelector('.project-title')?.textContent
+                    || document.querySelector('.brand-title')?.textContent
+                    || document.title;
+                return (byId || byData || byTitle || 'proyecto').trim();
+            }
+            function yyyy_mm_dd(d) {
+                const y = d.getFullYear();
+                const m = String(d.getMonth() + 1).padStart(2, '0');
+                const day = String(d.getDate()).padStart(2, '0');
+                return `${y}-${m}-${day}`;
+            }
+            function notify(msg, type) {
+                if (typeof window.showNotification === 'function') {
+                    window.showNotification(msg, type || 'info');
+                } else {
+                    console.log(`[${type || 'info'}] ${msg}`);
+                }
+            }
 
-  // --- lectura del diagrama -> SQL (fallback si no existe generateSQL) ---
-  function normalizeType(t) {
-    let dataType = String(t || '').trim();
-    if (!dataType) dataType = 'VARCHAR(255)';
-    dataType = dataType.replace(/INTEGER/gi, 'INT')
-                       .replace(/NUMBER/gi, 'INT')
-                       .replace(/STRING/gi, 'VARCHAR(255)');
-    if (/^TEXT$/i.test(dataType)) dataType = 'TEXT';
-    if (/^DATE$/i.test(dataType)) dataType = 'DATE';
-    if (/^DECIMAL$/i.test(dataType)) dataType = 'DECIMAL(10,2)';
-    return dataType;
-  }
-  function getTableNameFromEntity(entity) {
-    // th suele contener el nombre de la entidad
-    const thName = entity.querySelector('th')?.textContent?.trim();
-    if (thName) return thName;
-    // fallback: cabecera con .entity-name, si existiera
-    const head = entity.querySelector('.entity-name')?.textContent?.trim();
-    if (head) return head;
-    return `tabla_${Math.random().toString(36).slice(2,7)}`;
-  }
-  function findPrimaryKeyField(entity) {
-    const rows = entity.querySelectorAll('tbody tr');
-    for (const row of rows) {
-      const tds = row.querySelectorAll('td');
-      if (tds.length >= 2 && tds[0].querySelector('.fa-key')) {
-        return tds[1].textContent.trim().toLowerCase();
-      }
-    }
-    return 'id';
-  }
-  function findForeignKeyField(entity, referencedTableName) {
-    const rows = entity.querySelectorAll('tbody tr');
-    const ref = (referencedTableName || '').toLowerCase();
-    for (const row of rows) {
-      const tds = row.querySelectorAll('td');
-      if (tds.length >= 2) {
-        const keyCell = tds[0];
-        const nameCell = tds[1];
-        const fieldName = nameCell.textContent.trim().toLowerCase();
-        if (
-          keyCell.querySelector('.fa-external-link-alt') ||
-          fieldName.includes(ref) ||
-          fieldName === `id_${ref}` ||
-          fieldName === `${ref}_id` ||
-          fieldName === `id${ref}` ||
-          fieldName === `${ref}id`
-        ) return fieldName;
-      }
-    }
-    return null;
-  }
-  function buildSQLFromDOM() {
-    const ws = document.getElementById('workspaceArea');
-    if (!ws) return '';
-    const entities = ws.querySelectorAll('.er-element');
-    const sql = [];
-    entities.forEach(entity => {
-      const tableName = getTableNameFromEntity(entity).toLowerCase().replace(/\s+/g, '_');
-      const rows = entity.querySelectorAll('tbody tr');
-      const fieldLines = [];
-      const pks = [];
-      rows.forEach(row => {
-        const tds = row.querySelectorAll('td');
-        if (!tds.length) return;
-        let fieldName = null;
-        let dataType = 'VARCHAR(255)';
-        let isPK = false;
-        if (tds.length === 1) {
-          fieldName = tds[0].textContent.trim();
-        } else if (tds.length === 2) {
-          if (tds[0].querySelector('.fa-key')) {
-            isPK = true;
-            fieldName = tds[1].textContent.trim();
-          } else {
-            fieldName = tds[0].textContent.trim();
-            dataType = tds[1].textContent.trim() || dataType;
-          }
-        } else {
-          if (tds[0].querySelector('.fa-key')) {
-            isPK = true;
-            fieldName = tds[1].textContent.trim();
-            dataType = tds[2].textContent.trim() || dataType;
-          } else {
-            fieldName = tds[0].textContent.trim();
-            dataType = tds[1].textContent.trim() || dataType;
-          }
-        }
-        if (!fieldName) return;
-        let line = `  ${fieldName.toLowerCase()} ${normalizeType(dataType)}`;
-        if (isPK) {
-          line += ' PRIMARY KEY';
-          if (/INT/i.test(dataType)) line += ' AUTO_INCREMENT';
-          pks.push(fieldName.toLowerCase());
-        } else {
-          const n = fieldName.toLowerCase();
-          if (/(nombre|email|titulo|fecha|monto)/.test(n)) line += ' NOT NULL';
-        }
-        fieldLines.push(line);
-      });
-      sql.push(`CREATE TABLE ${tableName} (\n${fieldLines.join(',\n')}\n);\n`);
-    });
-    // Relaciones 1:N con allConnections si existen
-    if (Array.isArray(window.allConnections) && window.allConnections.length) {
-      sql.push('-- Foreign Keys');
-      const added = {};
-      window.allConnections.forEach(conn => {
-        const table1 = conn.table1?.querySelector('th')?.textContent?.trim().toLowerCase();
-        const tableN = conn.tableN?.querySelector('th')?.textContent?.trim().toLowerCase();
-        if (!table1 || !tableN) return;
-        const fkField = findForeignKeyField(conn.tableN, table1) || `${table1}_id`;
-        const pkField = findPrimaryKeyField(conn.table1) || 'id';
-        const cname = `fk_${tableN}_${table1}`;
-        if (added[cname]) return;
-        sql.push(`ALTER TABLE ${tableN}\n  ADD CONSTRAINT ${cname}\n  FOREIGN KEY (${fkField}) REFERENCES ${table1}(${pkField});\n`);
-        added[cname] = true;
-      });
-    }
-    return sql.join('\n');
-  }
+            // --- lectura del diagrama -> SQL (fallback si no existe generateSQL) ---
+            function normalizeType(t) {
+                let dataType = String(t || '').trim();
+                if (!dataType) dataType = 'VARCHAR(255)';
+                dataType = dataType.replace(/INTEGER/gi, 'INT')
+                    .replace(/NUMBER/gi, 'INT')
+                    .replace(/STRING/gi, 'VARCHAR(255)');
+                if (/^TEXT$/i.test(dataType)) dataType = 'TEXT';
+                if (/^DATE$/i.test(dataType)) dataType = 'DATE';
+                if (/^DECIMAL$/i.test(dataType)) dataType = 'DECIMAL(10,2)';
+                return dataType;
+            }
+            function getTableNameFromEntity(entity) {
+                // th suele contener el nombre de la entidad
+                const thName = entity.querySelector('th')?.textContent?.trim();
+                if (thName) return thName;
+                // fallback: cabecera con .entity-name, si existiera
+                const head = entity.querySelector('.entity-name')?.textContent?.trim();
+                if (head) return head;
+                return `tabla_${Math.random().toString(36).slice(2, 7)}`;
+            }
+            function findPrimaryKeyField(entity) {
+                const rows = entity.querySelectorAll('tbody tr');
+                for (const row of rows) {
+                    const tds = row.querySelectorAll('td');
+                    if (tds.length >= 2 && tds[0].querySelector('.fa-key')) {
+                        return tds[1].textContent.trim().toLowerCase();
+                    }
+                }
+                return 'id';
+            }
+            function findForeignKeyField(entity, referencedTableName) {
+                const rows = entity.querySelectorAll('tbody tr');
+                const ref = (referencedTableName || '').toLowerCase();
+                for (const row of rows) {
+                    const tds = row.querySelectorAll('td');
+                    if (tds.length >= 2) {
+                        const keyCell = tds[0];
+                        const nameCell = tds[1];
+                        const fieldName = nameCell.textContent.trim().toLowerCase();
+                        if (
+                            keyCell.querySelector('.fa-external-link-alt') ||
+                            fieldName.includes(ref) ||
+                            fieldName === `id_${ref}` ||
+                            fieldName === `${ref}_id` ||
+                            fieldName === `id${ref}` ||
+                            fieldName === `${ref}id`
+                        ) return fieldName;
+                    }
+                }
+                return null;
+            }
+            function buildSQLFromDOM() {
+                const ws = document.getElementById('workspaceArea');
+                if (!ws) return '';
+                const entities = ws.querySelectorAll('.er-element');
+                const sql = [];
+                entities.forEach(entity => {
+                    const tableName = getTableNameFromEntity(entity).toLowerCase().replace(/\s+/g, '_');
+                    const rows = entity.querySelectorAll('tbody tr');
+                    const fieldLines = [];
+                    const pks = [];
+                    rows.forEach(row => {
+                        const tds = row.querySelectorAll('td');
+                        if (!tds.length) return;
+                        let fieldName = null;
+                        let dataType = 'VARCHAR(255)';
+                        let isPK = false;
+                        if (tds.length === 1) {
+                            fieldName = tds[0].textContent.trim();
+                        } else if (tds.length === 2) {
+                            if (tds[0].querySelector('.fa-key')) {
+                                isPK = true;
+                                fieldName = tds[1].textContent.trim();
+                            } else {
+                                fieldName = tds[0].textContent.trim();
+                                dataType = tds[1].textContent.trim() || dataType;
+                            }
+                        } else {
+                            if (tds[0].querySelector('.fa-key')) {
+                                isPK = true;
+                                fieldName = tds[1].textContent.trim();
+                                dataType = tds[2].textContent.trim() || dataType;
+                            } else {
+                                fieldName = tds[0].textContent.trim();
+                                dataType = tds[1].textContent.trim() || dataType;
+                            }
+                        }
+                        if (!fieldName) return;
+                        let line = `  ${fieldName.toLowerCase()} ${normalizeType(dataType)}`;
+                        if (isPK) {
+                            line += ' PRIMARY KEY';
+                            if (/INT/i.test(dataType)) line += ' AUTO_INCREMENT';
+                            pks.push(fieldName.toLowerCase());
+                        } else {
+                            const n = fieldName.toLowerCase();
+                            if (/(nombre|email|titulo|fecha|monto)/.test(n)) line += ' NOT NULL';
+                        }
+                        fieldLines.push(line);
+                    });
+                    sql.push(`CREATE TABLE ${tableName} (\n${fieldLines.join(',\n')}\n);\n`);
+                });
+                // Relaciones 1:N con allConnections si existen
+                if (Array.isArray(window.allConnections) && window.allConnections.length) {
+                    sql.push('-- Foreign Keys');
+                    const added = {};
+                    window.allConnections.forEach(conn => {
+                        const table1 = conn.table1?.querySelector('th')?.textContent?.trim().toLowerCase();
+                        const tableN = conn.tableN?.querySelector('th')?.textContent?.trim().toLowerCase();
+                        if (!table1 || !tableN) return;
+                        const fkField = findForeignKeyField(conn.tableN, table1) || `${table1}_id`;
+                        const pkField = findPrimaryKeyField(conn.table1) || 'id';
+                        const cname = `fk_${tableN}_${table1}`;
+                        if (added[cname]) return;
+                        sql.push(`ALTER TABLE ${tableN}\n  ADD CONSTRAINT ${cname}\n  FOREIGN KEY (${fkField}) REFERENCES ${table1}(${pkField});\n`);
+                        added[cname] = true;
+                    });
+                }
+                return sql.join('\n');
+            }
 
-  // --- export main ---
-  function buildSQLFromDiagramSafe() {
-    // Intenta usar tu generateSQL (si existe) para mantener coherencia
-    try {
-      if (typeof window.generateSQL === 'function') {
-        window.generateSQL();
-        const editor = document.getElementById('sqlEditor');
-        const txt = editor && editor.value ? editor.value.trim() : '';
-        if (txt) return txt;
-      }
-    } catch (e) {
-      console.warn('generateSQL falló, uso fallback DOM:', e);
-    }
-    // Fallback: construir directo del DOM
-    return buildSQLFromDOM();
-  }
+            // --- export main ---
+            function buildSQLFromDiagramSafe() {
+                // Intenta usar tu generateSQL (si existe) para mantener coherencia
+                try {
+                    if (typeof window.generateSQL === 'function') {
+                        window.generateSQL();
+                        const editor = document.getElementById('sqlEditor');
+                        const txt = editor && editor.value ? editor.value.trim() : '';
+                        if (txt) return txt;
+                    }
+                } catch (e) {
+                    console.warn('generateSQL falló, uso fallback DOM:', e);
+                }
+                // Fallback: construir directo del DOM
+                return buildSQLFromDOM();
+            }
 
-  function exportSQLTxt() {
-    const sql = buildSQLFromDiagramSafe();
-    if (!sql || !sql.trim()) {
-      notify('No se pudo generar el SQL desde el diagrama', 'error');
-      return;
-    }
-    // Cambio aquí: nombre fijo "GraphUS_Diagrama" + fecha
-    const fileName = `GraphUs - Creación de diagramas ER${yyyy_mm_dd(new Date())}.txt`;
-    const blob = new Blob([sql], { type: 'text/plain;charset=utf-8' });
-    const a = document.createElement('a');
-    a.href = URL.createObjectURL(blob);
-    a.download = fileName;
-    document.body.appendChild(a);
-    a.click();
-    a.remove();
-    URL.revokeObjectURL(a.href);
-    notify(`SQL descargado: ${fileName}`, 'success');
-  }
+            function exportSQLTxt() {
+                const sql = buildSQLFromDiagramSafe();
+                if (!sql || !sql.trim()) {
+                    notify('No se pudo generar el SQL desde el diagrama', 'error');
+                    return;
+                }
+                // Cambio aquí: nombre fijo "GraphUS_Diagrama" + fecha
+                const fileName = `GraphUs - Creación de diagramas ER${yyyy_mm_dd(new Date())}.txt`;
+                const blob = new Blob([sql], { type: 'text/plain;charset=utf-8' });
+                const a = document.createElement('a');
+                a.href = URL.createObjectURL(blob);
+                a.download = fileName;
+                document.body.appendChild(a);
+                a.click();
+                a.remove();
+                URL.revokeObjectURL(a.href);
+                notify(`SQL descargado: ${fileName}`, 'success');
+            }
 
-  // --- UI hooks ---
-  function injectSQLTxtButton() {
-    const editor = document.getElementById('sqlEditor');
-    if (!editor) return;
-    // Buscar una toolbar cercana (la que contiene "Copiar" y "Descargar")
-    const card = editor.closest('[class*="shadow"]') || editor.parentElement;
-    if (!card) return;
-    const candidateToolbars = card.querySelectorAll('.flex, .space-x-2, .gap-2');
-    let toolbar = null;
-    candidateToolbars.forEach(el => {
-      if (/Copiar|Descargar/i.test(el.textContent)) toolbar = el;
-    });
-    const container = toolbar || (card.querySelector('.flex') || card);
-    if (!container || container.querySelector('#btnExportSqlTxt')) return;
-    const btn = document.createElement('button');
-    btn.id = 'btnExportSqlTxt';
-    btn.type = 'button';
-    btn.className = 'px-3 py-1.5 rounded-xl border border-gray-300 hover:bg-gray-100 text-sm';
-    btn.innerHTML = '<i class="fas fa-file-export mr-2"></i>Exportar TXT';
-    btn.addEventListener('click', exportSQLTxt);
-    container.appendChild(btn);
-  }
+            // --- UI hooks ---
+            function injectSQLTxtButton() {
+                const editor = document.getElementById('sqlEditor');
+                if (!editor) return;
+                // Buscar una toolbar cercana (la que contiene "Copiar" y "Descargar")
+                const card = editor.closest('[class*="shadow"]') || editor.parentElement;
+                if (!card) return;
+                const candidateToolbars = card.querySelectorAll('.flex, .space-x-2, .gap-2');
+                let toolbar = null;
+                candidateToolbars.forEach(el => {
+                    if (/Copiar|Descargar/i.test(el.textContent)) toolbar = el;
+                });
+                const container = toolbar || (card.querySelector('.flex') || card);
+                if (!container || container.querySelector('#btnExportSqlTxt')) return;
+                const btn = document.createElement('button');
+                btn.id = 'btnExportSqlTxt';
+                btn.type = 'button';
+                btn.className = 'px-3 py-1.5 rounded-xl border border-gray-300 hover:bg-gray-100 text-sm';
+                btn.innerHTML = '<i class="fas fa-file-export mr-2"></i>Exportar TXT';
+                btn.addEventListener('click', exportSQLTxt);
+                container.appendChild(btn);
+            }
 
-  function hookRightPanelExport() {
-    // Delegación global: cuando se muestre el panel "Exportar", capturar clic
-    document.addEventListener('click', function (e) {
-      const card = e.target.closest('.cursor-pointer, .p-3, .rounded-xl');
-      if (!card) return;
-      const text = card.textContent || '';
-      // Detecta específicamente el bloque "Exportar Código SQL" > "Script completo de la base de datos"
-      if (/Exportar Código SQL/i.test(text) && /Script completo/i.test(text)) {
-        exportSQLTxt();
-      }
-    });
-  }
+            function hookRightPanelExport() {
+                // Delegación global: cuando se muestre el panel "Exportar", capturar clic
+                document.addEventListener('click', function (e) {
+                    const card = e.target.closest('.cursor-pointer, .p-3, .rounded-xl');
+                    if (!card) return;
+                    const text = card.textContent || '';
+                    // Detecta específicamente el bloque "Exportar Código SQL" > "Script completo de la base de datos"
+                    if (/Exportar Código SQL/i.test(text) && /Script completo/i.test(text)) {
+                        exportSQLTxt();
+                    }
+                });
+            }
 
-  // Observa cambios en el DOM para reinyectar el botón si cambian vistas
-  const mo = new MutationObserver(() => injectSQLTxtButton());
-  window.addEventListener('DOMContentLoaded', () => {
-    injectSQLTxtButton();
-    hookRightPanelExport();
-    const root = document.body;
-    mo.observe(root, { childList: true, subtree: true });
-  });
+            // Observa cambios en el DOM para reinyectar el botón si cambian vistas
+            const mo = new MutationObserver(() => injectSQLTxtButton());
+            window.addEventListener('DOMContentLoaded', () => {
+                injectSQLTxtButton();
+                hookRightPanelExport();
+                const root = document.body;
+                mo.observe(root, { childList: true, subtree: true });
+            });
 
-  // Dejar disponible global para llamadas manuales
-  window.exportSQLTxt = exportSQLTxt;
-})();
-</script>
-<script>
-/*! export-doc-pdf.js
- * Crea un PDF con (1) imagen del diagrama y (2) código SQL completo.
- * No modifica tus funciones existentes. Se integra con la tarjeta
- * "Exportar Documentación — PDF con diagramas y código".
- */
-(function () {
-  // ====== Helpers de entorno ======
-  function notify(msg, type) {
-    if (typeof window.showNotification === 'function') {
-      window.showNotification(msg, type || 'info');
-    } else {
-      console.log(`[${type || 'info'}] ${msg}`);
-    }
-  }
-  function showLoader(msg) {
-    if (typeof window.showExportLoader === 'function') {
-      window.showExportLoader(msg || 'Generando PDF.');
-    } else {
-      console.log('[loader] ' + (msg || 'Generando PDF.'));
-    }
-  }
-  function hideLoader() {
-    if (typeof window.hideExportLoader === 'function') {
-      window.hideExportLoader();
-    }
-  }
-  function yyyy_mm_dd(d) {
-    const y = d.getFullYear();
-    const m = String(d.getMonth() + 1).padStart(2, '0');
-    const day = String(d.getDate()).padStart(2, '0');
-    return `${y}-${m}-${day}`;
-  }
-  function getProjectName() {
-    const byId = document.querySelector('#projectName')?.value;
-    const byData = document.querySelector('[data-project-name]')?.getAttribute('data-project-name')
-                 || document.querySelector('[data-project]')?.getAttribute('data-project');
-    const byTitle = document.querySelector('.project-title')?.textContent
-                 || document.querySelector('.brand-title')?.textContent
-                 || document.title;
-    return (byId || byData || byTitle || 'Proyecto').trim();
-  }
+            // Dejar disponible global para llamadas manuales
+            window.exportSQLTxt = exportSQLTxt;
+        })();
+    </script>
+    <script>
+        /*! export-doc-pdf.js
+         * Crea un PDF con (1) imagen del diagrama y (2) código SQL completo.
+         * No modifica tus funciones existentes. Se integra con la tarjeta
+         * "Exportar Documentación — PDF con diagramas y código".
+         */
+        (function () {
+            // ====== Helpers de entorno ======
+            function notify(msg, type) {
+                if (typeof window.showNotification === 'function') {
+                    window.showNotification(msg, type || 'info');
+                } else {
+                    console.log(`[${type || 'info'}] ${msg}`);
+                }
+            }
+            function showLoader(msg) {
+                if (typeof window.showExportLoader === 'function') {
+                    window.showExportLoader(msg || 'Generando PDF.');
+                } else {
+                    console.log('[loader] ' + (msg || 'Generando PDF.'));
+                }
+            }
+            function hideLoader() {
+                if (typeof window.hideExportLoader === 'function') {
+                    window.hideExportLoader();
+                }
+            }
+            function yyyy_mm_dd(d) {
+                const y = d.getFullYear();
+                const m = String(d.getMonth() + 1).padStart(2, '0');
+                const day = String(d.getDate()).padStart(2, '0');
+                return `${y}-${m}-${day}`;
+            }
+            function getProjectName() {
+                const byId = document.querySelector('#projectName')?.value;
+                const byData = document.querySelector('[data-project-name]')?.getAttribute('data-project-name')
+                    || document.querySelector('[data-project]')?.getAttribute('data-project');
+                const byTitle = document.querySelector('.project-title')?.textContent
+                    || document.querySelector('.brand-title')?.textContent
+                    || document.title;
+                return (byId || byData || byTitle || 'Proyecto').trim();
+            }
 
-  // ====== Cargadores de libs ======
-  function loadHtml2CanvasIfNeeded() {
-    return new Promise((resolve, reject) => {
-      if (window.html2canvas) return resolve();
-      const s = document.createElement('script');
-      s.src = 'https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js';
-      s.onload = resolve;
-      s.onerror = () => reject(new Error('No se pudo cargar html2canvas'));
-      document.head.appendChild(s);
-    });
-  }
-  function loadJsPDFIfNeeded() {
-    return new Promise((resolve, reject) => {
-      if (window.jspdf || (window.jsPDF && typeof window.jsPDF === 'function')) return resolve();
-      const s = document.createElement('script');
-      s.src = 'https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js';
-      s.onload = resolve;
-      s.onerror = () => reject(new Error('No se pudo cargar jsPDF'));
-      document.head.appendChild(s);
-    });
-  }
+            // ====== Cargadores de libs ======
+            function loadHtml2CanvasIfNeeded() {
+                return new Promise((resolve, reject) => {
+                    if (window.html2canvas) return resolve();
+                    const s = document.createElement('script');
+                    s.src = 'https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js';
+                    s.onload = resolve;
+                    s.onerror = () => reject(new Error('No se pudo cargar html2canvas'));
+                    document.head.appendChild(s);
+                });
+            }
+            function loadJsPDFIfNeeded() {
+                return new Promise((resolve, reject) => {
+                    if (window.jspdf || (window.jsPDF && typeof window.jsPDF === 'function')) return resolve();
+                    const s = document.createElement('script');
+                    s.src = 'https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js';
+                    s.onload = resolve;
+                    s.onerror = () => reject(new Error('No se pudo cargar jsPDF'));
+                    document.head.appendChild(s);
+                });
+            }
 
-  // ====== Captura de imagen del diagrama (reutiliza tu enfoque actual) ======
-  async function captureWorkspaceAsDataURL() {
-    const workspace = document.getElementById('workspaceArea');
-    if (!workspace) throw new Error('No se encontró el área de trabajo');
+            // ====== Captura de imagen del diagrama (reutiliza tu enfoque actual) ======
+            async function captureWorkspaceAsDataURL() {
+                const workspace = document.getElementById('workspaceArea');
+                if (!workspace) throw new Error('No se encontró el área de trabajo');
 
-    const entities = workspace.querySelectorAll('.er-element');
-    const connections = workspace.querySelectorAll('.connections-layer line');
-    if (entities.length === 0 && connections.length === 0) {
-      throw new Error('No hay contenido para exportar');
-    }
+                const entities = workspace.querySelectorAll('.er-element');
+                const connections = workspace.querySelectorAll('.connections-layer line');
+                if (entities.length === 0 && connections.length === 0) {
+                    throw new Error('No hay contenido para exportar');
+                }
 
-    await loadHtml2CanvasIfNeeded(); // ya lo usas para PNG/JPG/SVG
-    const canvas = await html2canvas(workspace, {
-      backgroundColor: '#ffffff',
-      scale: 2,
-      useCORS: true,
-      allowTaint: true,
-      scrollX: 0,
-      scrollY: 0,
-      width: workspace.offsetWidth,
-      height: workspace.offsetHeight
-    });
-    return canvas.toDataURL('image/png');
-  }
+                await loadHtml2CanvasIfNeeded(); // ya lo usas para PNG/JPG/SVG
+                const canvas = await html2canvas(workspace, {
+                    backgroundColor: '#ffffff',
+                    scale: 2,
+                    useCORS: true,
+                    allowTaint: true,
+                    scrollX: 0,
+                    scrollY: 0,
+                    width: workspace.offsetWidth,
+                    height: workspace.offsetHeight
+                });
+                return canvas.toDataURL('image/png');
+            }
 
-  // ====== Obtención de SQL (1º intenta tu generateSQL, 2º fallback DOM) ======
-  function normalizeType(t) {
-    let dataType = String(t || '').trim();
-    if (!dataType) dataType = 'VARCHAR(255)';
-    dataType = dataType.replace(/INTEGER/gi, 'INT')
-                       .replace(/NUMBER/gi, 'INT')
-                       .replace(/STRING/gi, 'VARCHAR(255)');
-    if (/^TEXT$/i.test(dataType)) dataType = 'TEXT';
-    if (/^DATE$/i.test(dataType)) dataType = 'DATE';
-    if (/^DECIMAL$/i.test(dataType)) dataType = 'DECIMAL(10,2)';
-    return dataType;
-  }
-  function findPrimaryKeyField(entityEl) {
-    // icono de llave o texto con "PK" en la fila
-    const rows = entityEl.querySelectorAll('tr');
-    for (const tr of rows) {
-      const hasKeyIcon = tr.querySelector('.fa-key');
-      const txt = tr.textContent || '';
-      if (hasKeyIcon || /\bPK\b|PRIMARY KEY/i.test(txt)) {
-        const td = tr.querySelector('td, th');
-        if (td) return td.textContent.trim().toLowerCase();
-      }
-    }
-    // fallback típico
-    return 'id';
-  }
-  function findForeignKeyField(entityWrapper, referencedName) {
-    const name = String(referencedName || '').toLowerCase();
-    const candidates = [
-      `${name}_id`, `${name}Id`, `${name}_fk`, `id_${name}`, `fk_${name}`
-    ];
-    const rows = entityWrapper.querySelectorAll('tr');
-    for (const tr of rows) {
-      const td = tr.querySelector('td, th');
-      const colName = td?.textContent?.trim() || '';
-      if (!colName) continue;
-      if (candidates.includes(colName) || new RegExp(`${name}.*id`, 'i').test(colName)) {
-        return colName;
-      }
-    }
-    return null;
-  }
-  function buildSQLFromDOM() {
-    const ws = document.getElementById('workspaceArea');
-    const entities = Array.from(ws.querySelectorAll('.er-element'));
-    if (!entities.length) return '';
+            // ====== Obtención de SQL (1º intenta tu generateSQL, 2º fallback DOM) ======
+            function normalizeType(t) {
+                let dataType = String(t || '').trim();
+                if (!dataType) dataType = 'VARCHAR(255)';
+                dataType = dataType.replace(/INTEGER/gi, 'INT')
+                    .replace(/NUMBER/gi, 'INT')
+                    .replace(/STRING/gi, 'VARCHAR(255)');
+                if (/^TEXT$/i.test(dataType)) dataType = 'TEXT';
+                if (/^DATE$/i.test(dataType)) dataType = 'DATE';
+                if (/^DECIMAL$/i.test(dataType)) dataType = 'DECIMAL(10,2)';
+                return dataType;
+            }
+            function findPrimaryKeyField(entityEl) {
+                // icono de llave o texto con "PK" en la fila
+                const rows = entityEl.querySelectorAll('tr');
+                for (const tr of rows) {
+                    const hasKeyIcon = tr.querySelector('.fa-key');
+                    const txt = tr.textContent || '';
+                    if (hasKeyIcon || /\bPK\b|PRIMARY KEY/i.test(txt)) {
+                        const td = tr.querySelector('td, th');
+                        if (td) return td.textContent.trim().toLowerCase();
+                    }
+                }
+                // fallback típico
+                return 'id';
+            }
+            function findForeignKeyField(entityWrapper, referencedName) {
+                const name = String(referencedName || '').toLowerCase();
+                const candidates = [
+                    `${name}_id`, `${name}Id`, `${name}_fk`, `id_${name}`, `fk_${name}`
+                ];
+                const rows = entityWrapper.querySelectorAll('tr');
+                for (const tr of rows) {
+                    const td = tr.querySelector('td, th');
+                    const colName = td?.textContent?.trim() || '';
+                    if (!colName) continue;
+                    if (candidates.includes(colName) || new RegExp(`${name}.*id`, 'i').test(colName)) {
+                        return colName;
+                    }
+                }
+                return null;
+            }
+            function buildSQLFromDOM() {
+                const ws = document.getElementById('workspaceArea');
+                const entities = Array.from(ws.querySelectorAll('.er-element'));
+                if (!entities.length) return '';
 
-    const sql = [];
-    entities.forEach(wrapper => {
-      const tableEl = wrapper.querySelector('table');
-      if (!tableEl) return;
+                const sql = [];
+                entities.forEach(wrapper => {
+                    const tableEl = wrapper.querySelector('table');
+                    if (!tableEl) return;
 
-      const thName = tableEl.querySelector('th')?.textContent?.trim() ||
-                     wrapper.querySelector('th')?.textContent?.trim() || 'tabla';
-      const tableName = thName.trim().toLowerCase().replace(/\s+/g, '_');
+                    const thName = tableEl.querySelector('th')?.textContent?.trim() ||
+                        wrapper.querySelector('th')?.textContent?.trim() || 'tabla';
+                    const tableName = thName.trim().toLowerCase().replace(/\s+/g, '_');
 
-      const fields = [];
-      tableEl.querySelectorAll('tr').forEach(tr => {
-        const cells = tr.querySelectorAll('td, th');
-        if (!cells.length) return;
-        const colName = (cells[0].textContent || '').trim();
-        if (!colName) return;
-        let typeTxt = (cells[1]?.textContent || '').trim();
-        typeTxt = normalizeType(typeTxt);
-        let line = `  ${colName} ${typeTxt}`;
-        const txt = tr.textContent || '';
-        if (/\bPK\b|PRIMARY KEY/i.test(txt)) line += ' PRIMARY KEY';
-        if (/\bNN\b|NOT NULL/i.test(txt)) line += ' NOT NULL';
-        fields.push(line);
-      });
-      if (fields.length) {
-        sql.push(`CREATE TABLE ${tableName} (\n${fields.join(',\n')}\n);\n`);
-      }
-    });
+                    const fields = [];
+                    tableEl.querySelectorAll('tr').forEach(tr => {
+                        const cells = tr.querySelectorAll('td, th');
+                        if (!cells.length) return;
+                        const colName = (cells[0].textContent || '').trim();
+                        if (!colName) return;
+                        let typeTxt = (cells[1]?.textContent || '').trim();
+                        typeTxt = normalizeType(typeTxt);
+                        let line = `  ${colName} ${typeTxt}`;
+                        const txt = tr.textContent || '';
+                        if (/\bPK\b|PRIMARY KEY/i.test(txt)) line += ' PRIMARY KEY';
+                        if (/\bNN\b|NOT NULL/i.test(txt)) line += ' NOT NULL';
+                        fields.push(line);
+                    });
+                    if (fields.length) {
+                        sql.push(`CREATE TABLE ${tableName} (\n${fields.join(',\n')}\n);\n`);
+                    }
+                });
 
-    // Relaciones 1:N si existen (usa window.allConnections que ya mantienes)
-    if (Array.isArray(window.allConnections) && window.allConnections.length) {
-      sql.push('-- Foreign Keys');
-      const added = {};
-      window.allConnections.forEach(conn => {
-        const table1 = conn.table1?.querySelector('th')?.textContent?.trim().toLowerCase();
-        const tableN = conn.tableN?.querySelector('th')?.textContent?.trim().toLowerCase();
-        if (!table1 || !tableN) return;
-        const fkField = findForeignKeyField(conn.tableN, table1) || `${table1}_id`;
-        const pkField = findPrimaryKeyField(conn.table1) || 'id';
-        const cname = `fk_${tableN}_${table1}`;
-        if (added[cname]) return;
-        sql.push(`ALTER TABLE ${tableN}\n  ADD CONSTRAINT ${cname}\n  FOREIGN KEY (${fkField}) REFERENCES ${table1}(${pkField});\n`);
-        added[cname] = true;
-      });
-    }
-    return sql.join('\n');
-  }
-  function getDiagramSQL() {
-    try {
-      if (typeof window.generateSQL === 'function') {
-        window.generateSQL(); // tu función ya llena #sqlEditor
-        const editor = document.getElementById('sqlEditor');
-        const txt = editor && editor.value ? editor.value.trim() : '';
-        if (txt) return txt;
-      }
-    } catch (e) {
-      console.warn('generateSQL falló, se usará fallback DOM:', e);
-    }
-    return buildSQLFromDOM();
-  }
+                // Relaciones 1:N si existen (usa window.allConnections que ya mantienes)
+                if (Array.isArray(window.allConnections) && window.allConnections.length) {
+                    sql.push('-- Foreign Keys');
+                    const added = {};
+                    window.allConnections.forEach(conn => {
+                        const table1 = conn.table1?.querySelector('th')?.textContent?.trim().toLowerCase();
+                        const tableN = conn.tableN?.querySelector('th')?.textContent?.trim().toLowerCase();
+                        if (!table1 || !tableN) return;
+                        const fkField = findForeignKeyField(conn.tableN, table1) || `${table1}_id`;
+                        const pkField = findPrimaryKeyField(conn.table1) || 'id';
+                        const cname = `fk_${tableN}_${table1}`;
+                        if (added[cname]) return;
+                        sql.push(`ALTER TABLE ${tableN}\n  ADD CONSTRAINT ${cname}\n  FOREIGN KEY (${fkField}) REFERENCES ${table1}(${pkField});\n`);
+                        added[cname] = true;
+                    });
+                }
+                return sql.join('\n');
+            }
+            function getDiagramSQL() {
+                try {
+                    if (typeof window.generateSQL === 'function') {
+                        window.generateSQL(); // tu función ya llena #sqlEditor
+                        const editor = document.getElementById('sqlEditor');
+                        const txt = editor && editor.value ? editor.value.trim() : '';
+                        if (txt) return txt;
+                    }
+                } catch (e) {
+                    console.warn('generateSQL falló, se usará fallback DOM:', e);
+                }
+                return buildSQLFromDOM();
+            }
 
-  // ====== Generación del PDF (jsPDF) ======
-  async function exportDiagramAndSQLToPDF() {
-    try {
-      showLoader('Capturando diagrama e incrustando SQL.');
-      await loadJsPDFIfNeeded();
+            // ====== Generación del PDF (jsPDF) ======
+            async function exportDiagramAndSQLToPDF() {
+                try {
+                    showLoader('Capturando diagrama e incrustando SQL.');
+                    await loadJsPDFIfNeeded();
 
-      // UMD build de jsPDF
-      const { jsPDF } = window.jspdf || window;
+                    // UMD build de jsPDF
+                    const { jsPDF } = window.jspdf || window;
 
-      // 1) Capturar imagen del diagrama
-      const imgDataUrl = await captureWorkspaceAsDataURL();
+                    // 1) Capturar imagen del diagrama
+                    const imgDataUrl = await captureWorkspaceAsDataURL();
 
-      // 2) Obtener SQL
-      const sql = getDiagramSQL();
-      if (!sql || !sql.trim()) {
-        hideLoader();
-        notify('No se pudo generar el SQL desde el diagrama', 'error');
-        return;
-      }
+                    // 2) Obtener SQL
+                    const sql = getDiagramSQL();
+                    if (!sql || !sql.trim()) {
+                        hideLoader();
+                        notify('No se pudo generar el SQL desde el diagrama', 'error');
+                        return;
+                    }
 
-      // 3) Armar PDF
-      const doc = new jsPDF({ unit: 'pt', format: 'a4' }); // 595x842 pt
-      const pageW = doc.internal.pageSize.getWidth();
-      const pageH = doc.internal.pageSize.getHeight();
-      const margin = 40;
+                    // 3) Armar PDF
+                    const doc = new jsPDF({ unit: 'pt', format: 'a4' }); // 595x842 pt
+                    const pageW = doc.internal.pageSize.getWidth();
+                    const pageH = doc.internal.pageSize.getHeight();
+                    const margin = 40;
 
-      // Portada + imagen
-      const title = 'Documentación de Diagrama ER';
-      const proj = getProjectName();
-      const dateStr = yyyy_mm_dd(new Date());
+                    // Portada + imagen
+                    const title = 'Documentación de Diagrama ER';
+                    const proj = getProjectName();
+                    const dateStr = yyyy_mm_dd(new Date());
 
-      doc.setFont('helvetica', 'bold');
-      doc.setFontSize(16);
-      doc.text(title, margin, margin + 10);
+                    doc.setFont('helvetica', 'bold');
+                    doc.setFontSize(16);
+                    doc.text(title, margin, margin + 10);
 
-      doc.setFont('helvetica', 'normal');
-      doc.setFontSize(11);
-      doc.text(`Proyecto: ${proj}`, margin, margin + 30);
-      doc.text(`Fecha: ${dateStr}`, margin, margin + 46);
+                    doc.setFont('helvetica', 'normal');
+                    doc.setFontSize(11);
+                    doc.text(`Proyecto: ${proj}`, margin, margin + 30);
+                    doc.text(`Fecha: ${dateStr}`, margin, margin + 46);
 
-      // Insertar imagen ajustada al ancho disponible
-      const imgMaxW = pageW - margin * 2;
-      const img = new Image();
-      img.src = imgDataUrl;
-      // Para mantener la relación de aspecto, medimos con un canvas virtual
-      // (jsPDF no conoce el tamaño real hasta dibujar; usamos truco de Image)
-      await new Promise(res => { img.onload = res; img.onerror = res; });
-      const ratio = img.width ? (img.height / img.width) : 0.6; // fallback ratio
-      const imgW = imgMaxW;
-      const imgH = imgW * ratio;
+                    // Insertar imagen ajustada al ancho disponible
+                    const imgMaxW = pageW - margin * 2;
+                    const img = new Image();
+                    img.src = imgDataUrl;
+                    // Para mantener la relación de aspecto, medimos con un canvas virtual
+                    // (jsPDF no conoce el tamaño real hasta dibujar; usamos truco de Image)
+                    await new Promise(res => { img.onload = res; img.onerror = res; });
+                    const ratio = img.width ? (img.height / img.width) : 0.6; // fallback ratio
+                    const imgW = imgMaxW;
+                    const imgH = imgW * ratio;
 
-      let y = margin + 70;
-      if (y + imgH > pageH - margin) {
-        doc.addPage();
-        y = margin;
-      }
-      doc.addImage(imgDataUrl, 'PNG', margin, y, imgW, imgH);
+                    let y = margin + 70;
+                    if (y + imgH > pageH - margin) {
+                        doc.addPage();
+                        y = margin;
+                    }
+                    doc.addImage(imgDataUrl, 'PNG', margin, y, imgW, imgH);
 
-      // 4) Nueva(s) página(s) con SQL
-      doc.addPage();
-      doc.setFont('helvetica', 'bold');
-      doc.setFontSize(14);
-      doc.text('Script SQL', margin, margin);
+                    // 4) Nueva(s) página(s) con SQL
+                    doc.addPage();
+                    doc.setFont('helvetica', 'bold');
+                    doc.setFontSize(14);
+                    doc.text('Script SQL', margin, margin);
 
-      doc.setFont('helvetica', 'normal');
-      doc.setFontSize(10);
-      const textW = pageW - margin * 2;
-      const lines = doc.splitTextToSize(sql, textW);
+                    doc.setFont('helvetica', 'normal');
+                    doc.setFontSize(10);
+                    const textW = pageW - margin * 2;
+                    const lines = doc.splitTextToSize(sql, textW);
 
-      let cursorY = margin + 20;
-      const lineHeight = 13;
+                    let cursorY = margin + 20;
+                    const lineHeight = 13;
 
-      lines.forEach(line => {
-        if (cursorY + lineHeight > pageH - margin) {
-          doc.addPage();
-          cursorY = margin;
-        }
-        doc.text(line, margin, cursorY);
-        cursorY += lineHeight;
-      });
+                    lines.forEach(line => {
+                        if (cursorY + lineHeight > pageH - margin) {
+                            doc.addPage();
+                            cursorY = margin;
+                        }
+                        doc.text(line, margin, cursorY);
+                        cursorY += lineHeight;
+                    });
 
-      // 5) Descargar
-      const fileName = `GraphUs - Documentación ER ${dateStr}.pdf`;
-      doc.save(fileName);
+                    // 5) Descargar
+                    const fileName = `GraphUs - Documentación ER ${dateStr}.pdf`;
+                    doc.save(fileName);
 
-      hideLoader();
-      notify(`PDF generado: ${fileName}`, 'success');
-    } catch (err) {
-      console.error(err);
-      hideLoader();
-      notify('Ocurrió un error al generar el PDF', 'error');
-    }
-  }
+                    hideLoader();
+                    notify(`PDF generado: ${fileName}`, 'success');
+                } catch (err) {
+                    console.error(err);
+                    hideLoader();
+                    notify('Ocurrió un error al generar el PDF', 'error');
+                }
+            }
 
-  // ====== Hook con tu tarjeta "Exportar Documentación" ======
-  function hookExportDocumentationCard() {
-    document.addEventListener('click', function (e) {
-      const card = e.target.closest('.p-3.border.border-gray-200.rounded-lg');
-      if (!card) return;
-      const isDocCard =
-        /Exportar Documentación/i.test(card.textContent || '') &&
-        /PDF con diagramas y código/i.test(card.textContent || '');
-      if (isDocCard) {
-        e.preventDefault();
-        exportDiagramAndSQLToPDF();
-      }
-    });
-  }
+            // ====== Hook con tu tarjeta "Exportar Documentación" ======
+            function hookExportDocumentationCard() {
+                document.addEventListener('click', function (e) {
+                    const card = e.target.closest('.p-3.border.border-gray-200.rounded-lg');
+                    if (!card) return;
+                    const isDocCard =
+                        /Exportar Documentación/i.test(card.textContent || '') &&
+                        /PDF con diagramas y código/i.test(card.textContent || '');
+                    if (isDocCard) {
+                        e.preventDefault();
+                        exportDiagramAndSQLToPDF();
+                    }
+                });
+            }
 
-  // Init
-  window.addEventListener('DOMContentLoaded', () => {
-    hookExportDocumentationCard();
-  });
+            // Init
+            window.addEventListener('DOMContentLoaded', () => {
+                hookExportDocumentationCard();
+            });
 
-  // Exponer global por si quieres llamarlo manualmente
-  window.exportDiagramAndSQLToPDF = exportDiagramAndSQLToPDF;
-})();
-</script>
+            // Exponer global por si quieres llamarlo manualmente
+            window.exportDiagramAndSQLToPDF = exportDiagramAndSQLToPDF;
+        })();
+    </script>
 
 
 </body>
