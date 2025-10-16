@@ -1,0 +1,320 @@
+ /* Estilos originales del sidebar */
+        .sidebar-collapsed {
+            width: 5rem;
+        }
+
+        .sidebar-expanded {
+            width: 16rem;
+        }
+
+        .panel-collapsed {
+            width: 0;
+            opacity: 0;
+        }
+
+        .panel-expanded {
+            width: 20rem;
+            opacity: 1;
+        }
+
+        .slide-in {
+            animation: slideIn 0.3s ease-out;
+        }
+
+        @keyframes slideIn {
+            from {
+                transform: translateX(-20px);
+                opacity: 0;
+            }
+
+            to {
+                transform: translateX(0);
+                opacity: 1;
+            }
+        }
+
+        .nav-option {
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .nav-text {
+            transition: all 0.3s ease;
+            white-space: nowrap;
+            display: inline-block;
+            min-width: max-content;
+        }
+
+        .sidebar-collapsed .nav-text {
+            opacity: 0;
+            transform: translateX(-10px);
+            width: 0;
+            margin-left: 0;
+            margin-right: 0;
+        }
+
+        .sidebar-expanded .nav-text {
+            opacity: 1;
+            transform: translateX(0);
+            width: auto;
+            margin-left: 0.75rem;
+        }
+
+        .nav-icon-container {
+            min-width: 2.25rem;
+            transition: all 0.3s ease;
+        }
+
+        .sidebar-collapsed .nav-icon-container {
+            margin-right: 0 !important;
+        }
+
+        .tooltip {
+            position: absolute;
+            left: 100%;
+            top: 50%;
+            transform: translateY(-50%);
+            margin-left: 0.5rem;
+            background: rgba(15, 23, 42, 0.9);
+            color: white;
+            padding: 0.5rem 0.75rem;
+            border-radius: 0.5rem;
+            font-size: 0.875rem;
+            white-space: nowrap;
+            opacity: 0;
+            visibility: hidden;
+            transition: all 0.2s ease;
+            z-index: 50;
+            backdrop-filter: blur(8px);
+            pointer-events: none;
+        }
+
+        .tooltip::before {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: -4px;
+            transform: translateY(-50%);
+            border: 4px solid transparent;
+            border-right-color: rgba(15, 23, 42, 0.9);
+        }
+
+        .sidebar-collapsed .nav-option:hover .tooltip {
+            opacity: 1;
+            visibility: visible;
+        }
+
+        .selected-option {
+            background-color: white;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+            border-left: 4px solid #6366f1;
+        }
+
+        /* Sistema de Toasts */
+        :root {
+            --toast-help-primary: #05478a;
+            --toast-help-secondary: #0070e0;
+            --toast-success-primary: #005e38;
+            --toast-success-secondary: #03a65a;
+            --toast-warning-primary: #c24914;
+            --toast-warning-secondary: #fc8621;
+            --toast-error-primary: #851d41;
+            --toast-error-secondary: #db3056;
+        }
+
+        .toast-container {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            z-index: 1000;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            max-width: 400px;
+        }
+
+        .toast-item {
+            overflow: hidden;
+            max-height: 0;
+            opacity: 0;
+            transition: all 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+            transform: translateX(100%);
+            margin-bottom: 0;
+        }
+
+        .toast-item.show {
+            max-height: 200px;
+            opacity: 1;
+            transform: translateX(0);
+            margin-bottom: 10px;
+        }
+
+        .toast-item.removing {
+            max-height: 0;
+            opacity: 0;
+            transform: translateX(100%);
+            margin-bottom: 0;
+        }
+
+        .toast {
+            background: var(--toast-bg);
+            color: #f5f5f5;
+            padding: 1rem 2rem 1rem 6rem;
+            border-radius: 20px;
+            position: relative;
+            font-family: "Varela Round", sans-serif;
+            font-weight: 400;
+            text-align: left;
+            min-width: 280px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        /* Decoración de gotas animada */
+        .toast::before {
+            content: "";
+            position: absolute;
+            width: 5.5rem;
+            height: 6rem;
+            background:
+                radial-gradient(circle at 22% 3.8rem, var(--toast-primary) 0.75rem, transparent calc(0.75rem + 1px)),
+                radial-gradient(circle at 95% 1.9rem, var(--toast-primary) 0.07rem, transparent calc(0.07rem + 1px)),
+                radial-gradient(circle at 80% 2.25rem, var(--toast-primary) 0.18rem, transparent calc(0.18rem + 1px)),
+                radial-gradient(circle at 80% 75%, var(--toast-primary) 0.35rem, transparent calc(0.35rem + 1px)),
+                radial-gradient(circle at 43% 2.3rem, var(--toast-primary) 0.07rem, transparent calc(0.07rem + 1px)),
+                radial-gradient(circle at 40% 1rem, var(--toast-primary) 0.12rem, transparent calc(0.12rem + 1px)),
+                radial-gradient(circle at 20% 1.5rem, var(--toast-primary) 0.25rem, transparent calc(0.25rem + 1px)),
+                radial-gradient(circle at 64% 51%, var(--toast-primary) 0.45rem, transparent calc(0.45rem + 1px)),
+                radial-gradient(circle at 0% 120%, var(--toast-primary) 4rem, transparent calc(4rem + 1px));
+            background-repeat: no-repeat;
+            bottom: 0;
+            left: 0;
+            border-radius: 0 0 0 20px;
+            opacity: 0.6;
+        }
+
+        /* Icono circular */
+        .toast::after {
+            content: var(--toast-icon);
+            position: absolute;
+            width: 3.5rem;
+            height: 3.5rem;
+            background: var(--toast-primary);
+            top: -1.75rem;
+            left: 2rem;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.8rem;
+            color: white;
+            font-weight: bold;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+            border: 3px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .toast h3 {
+            font-size: 1.2rem;
+            margin: 0 0 0.5rem 0;
+            font-weight: 600;
+            position: relative;
+            color: #ffffff;
+        }
+
+        .toast p {
+            font-size: 0.95rem;
+            margin: 0;
+            line-height: 1.4;
+            color: rgba(255, 255, 255, 0.9);
+        }
+
+        .toast-close {
+            position: absolute;
+            top: 1rem;
+            right: 1rem;
+            width: 1.5rem;
+            height: 1.5rem;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.2);
+            border: none;
+            color: white;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.2rem;
+            transition: all 0.3s ease;
+            backdrop-filter: blur(5px);
+        }
+
+        .toast-close:hover {
+            background: rgba(255, 255, 255, 0.3);
+            transform: scale(1.1);
+        }
+
+        /* Tipos de toast */
+        .toast.help {
+            --toast-primary: var(--toast-help-primary);
+            --toast-bg: var(--toast-help-secondary);
+            --toast-icon: "?";
+        }
+
+        .toast.success {
+            --toast-primary: var(--toast-success-primary);
+            --toast-bg: var(--toast-success-secondary);
+            --toast-icon: "✓";
+        }
+
+        .toast.warning {
+            --toast-primary: var(--toast-warning-primary);
+            --toast-bg: var(--toast-warning-secondary);
+            --toast-icon: "!";
+        }
+
+        .toast.error {
+            --toast-primary: var(--toast-error-primary);
+            --toast-bg: var(--toast-error-secondary);
+            --toast-icon: "×";
+        }
+
+        /* Ajuste específico para el ícono de éxito */
+        .toast.success::after {
+            font-size: 1.4rem;
+        }
+
+        /* Animación de entrada suave */
+        @keyframes toastSlideIn {
+            from {
+                transform: translateX(100%) rotateZ(5deg);
+                opacity: 0;
+            }
+
+            to {
+                transform: translateX(0) rotateZ(0deg);
+                opacity: 1;
+            }
+        }
+
+        .toast-item.show {
+            animation: toastSlideIn 0.5s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+        }
+
+        /* Efecto hover en el toast */
+        .toast:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.4);
+        }
+
+        /* Barra de progreso para auto-close */
+        .toast-progress {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            height: 3px;
+            background: rgba(255, 255, 255, 0.3);
+            border-radius: 0 0 20px 20px;
+            transform-origin: left;
+            transition: transform linear;
+        }
